@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="Pendientes, gastos fijos, ingresos y cuadre por periodo."
+    />
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="assets/css/styles.css?v=20261001-menu-superior-v4"
+    />
+    <title>Ingresos · Control</title>
+  </head>
+  <body>
+    <div class="workspace">
+      <header class="app-navbar navbar navbar-expand-xl">
+        <div class="navbar-container">
+          <div class="navbar-brand-block">
+            <a
+              class="brand"
+              href="pendientes.html"
+              aria-label="Control, ir a pendientes"
+            >
+              <span class="brand-symbol"
+                ><i class="bi bi-check-lg" aria-hidden="true"></i
+              ></span>
+              control<span class="brand-dot">.</span>
+            </a>
+            <span class="workspace-label">PENDIENTES Y GASTOS</span>
+          </div>
+          <button
+            id="menu-toggle"
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#main-menu"
+            aria-controls="main-menu"
+            aria-expanded="false"
+            aria-label="Abrir o cerrar menú de navegación"
+          >
+            <span class="navbar-toggler-icon" aria-hidden="true"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="main-menu">
+            <nav
+              id="primary-nav"
+              class="navbar-nav"
+              aria-label="Navegación principal"
+            ></nav>
+            <div class="user-block">
+              <span class="avatar" aria-hidden="true"></span>
+              <div>
+                <strong class="user-name"></strong
+                ><small class="user-role"></small>
+              </div>
+              <button
+                id="logout"
+                type="button"
+                class="btn btn-outline-secondary"
+                aria-label="Cerrar sesión"
+              >
+                <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Salir
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+      <div class="workspace-content">
+        <header class="topbar">
+          <div class="breadcrumb-control">
+            <span>Mi espacio</span
+            ><i class="bi bi-chevron-right" aria-hidden="true"></i>
+            <strong id="header-page">Ingresos</strong>
+          </div>
+          <div class="header-tools">
+            <span id="header-date"></span
+            ><span class="role-pill" id="header-role"></span>
+            <button
+              type="button"
+              class="btn icon-button"
+              id="refresh"
+              title="Actualizar"
+              aria-label="Actualizar información"
+            >
+              <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+            </button>
+          </div>
+        </header>
+        <main class="main-content">
+          <div
+            id="page-error"
+            class="alert alert-danger"
+            role="alert"
+            hidden
+          ></div>
+          <a
+            id="session-link"
+            class="btn btn-outline-secondary mb-3"
+            href="login.html"
+            hidden
+            >Volver al login</a
+          >
+          <div id="page-loading" class="loading-state">
+            <span
+              class="spinner-border spinner-border-sm"
+              aria-hidden="true"
+            ></span>
+            Cargando información…
+          </div>
+          <div id="page-content" hidden>
+            <div class="page-header">
+              <div>
+                <span class="eyebrow">ENTRADAS DE DINERO</span>
+                <h1>Ingresos</h1>
+                <p>Registra el dinero recibido para calcular tu saldo real.</p>
+              </div>
+              <button
+                id="new-income"
+                type="button"
+                class="btn btn-primary"
+                data-admin-visible
+                data-new-income
+                aria-controls="income-modal"
+                aria-haspopup="dialog"
+                aria-describedby="create-access-notice"
+                disabled
+              >
+                <i class="bi bi-plus-lg"></i> Registrar ingreso
+              </button>
+            </div>
+            <p
+              id="create-access-notice"
+              class="role-access-note"
+              data-create-permission
+              hidden
+            >
+              Tu cuenta permite consultar y exportar. Para agregar registros, tu
+              administrador debe asignarte el rol admin.
+            </p>
+            <div id="stats" class="stats-grid three-stats"></div>
+            <section class="panel">
+              <div class="panel-top">
+                <h2>Historial de ingresos</h2>
+                <button id="export-incomes" class="btn btn-outline-secondary">
+                  <i class="bi bi-download"></i> Exportar CSV
+                </button>
+              </div>
+              <div class="filter-bar">
+                <input
+                  class="form-control search-input"
+                  id="search"
+                  aria-label="Buscar ingreso"
+                  placeholder="Buscar concepto o referencia…"
+                />
+                <div class="date-filter">
+                  <label for="from">Desde</label
+                  ><input class="form-control" type="date" id="from" /><label
+                    for="to"
+                    >Hasta</label
+                  ><input class="form-control" type="date" id="to" />
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="table control-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Concepto</th>
+                      <th scope="col">Fecha</th>
+                      <th scope="col">Importe</th>
+                      <th scope="col">Notas</th>
+                      <th scope="col">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="income-rows"></tbody>
+                </table>
+              </div>
+            </section>
+            <div class="helper-line">
+              <i class="bi bi-info-circle"></i
+              ><span
+                >Registra entradas recibidas. Las compras y servicios se pagan
+                desde Pendientes o Gastos fijos.</span
+              >
+            </div>
+          </div>
+        </main>
+        <footer class="app-footer">
+          <span>Control · Pendientes y gastos</span
+          ><span>Importes en pesos mexicanos (MXN)</span>
+        </footer>
+      </div>
+    </div>
+
+    <div
+      id="toast-container"
+      class="toast-container position-fixed bottom-0 end-0 p-3"
+      aria-live="polite"
+    ></div>
+    <div
+      class="modal fade"
+      id="income-modal"
+      tabindex="-1"
+      aria-labelledby="income-modal-title"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <form id="income-form" class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title fs-5" id="income-modal-title">
+              Registrar ingreso
+            </h2>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Cerrar"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div
+              class="alert alert-danger form-error"
+              role="alert"
+              hidden
+            ></div>
+            <input type="hidden" name="id" />
+            <div class="form-field">
+              <label class="form-label" for="income-title">Concepto</label
+              ><input
+                class="form-control"
+                id="income-title"
+                name="title"
+                type="text"
+                required
+                maxlength="160"
+                placeholder="Ej. Aportación para gastos"
+              />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="income-category">Categoría</label>
+              <select
+                class="form-select"
+                id="income-category"
+                name="category"
+                required
+                data-category-select
+                aria-describedby="income-category-help"
+              >
+                <option value="">Selecciona una categoría</option>
+                <option value="Agua">Agua</option>
+                <option value="Combustible">Combustible</option>
+                <option value="Cuentas de ChatGPT">Cuentas de ChatGPT</option>
+                <option value="Despensa">Despensa</option>
+                <option value="Gas">Gas</option>
+                <option value="Impuestos">Impuestos</option>
+                <option value="Inmuebles">Inmuebles</option>
+                <option value="Insumos">Insumos</option>
+                <option value="Internet">Internet</option>
+                <option value="Limpieza">Limpieza</option>
+                <option value="Luz">Luz</option>
+                <option value="Mantenimiento">Mantenimiento</option>
+                <option value="Otros">Otros</option>
+                <option value="Papelería">Papelería</option>
+                <option value="Renta almacén">Renta almacén</option>
+                <option value="Renta bazar">Renta bazar</option>
+                <option value="Renta vivienda">Renta vivienda</option>
+                <option value="Seguridad">Seguridad</option>
+                <option value="Seguros">Seguros</option>
+                <option value="Servicios">Servicios</option>
+                <option value="Sueldos">Sueldos</option>
+                <option value="Suscripciones">Suscripciones</option>
+                <option value="Tecnología">Tecnología</option>
+                <option value="Telefonía">Telefonía</option>
+                <option value="Transporte">Transporte</option>
+                <option value="__nueva_categoria__" data-new-category>
+                  + Agregar nueva categoría…
+                </option>
+              </select>
+              <div class="form-text" id="income-category-help">
+                25 categorías básicas. Para usar otra, elige «Agregar nueva
+                categoría…».
+              </div>
+              <div class="mt-2" data-category-custom hidden>
+                <label class="form-label" for="income-category-custom"
+                  >Nueva categoría</label
+                >
+                <input
+                  class="form-control"
+                  id="income-category-custom"
+                  name="categoryCustom"
+                  type="text"
+                  required
+                  disabled
+                  maxlength="80"
+                  placeholder="Escribe el nombre de la categoría"
+                />
+                <div class="form-text">
+                  Se agregará a la lista al guardar el registro.
+                </div>
+              </div>
+            </div>
+            <div class="form-grid">
+              <div class="form-field">
+                <label class="form-label" for="income-amount"
+                  >Importe recibido (MXN)</label
+                ><input
+                  class="form-control"
+                  id="income-amount"
+                  name="amount"
+                  type="number"
+                  required
+                  min="0.01"
+                  max="1000000000"
+                  step="0.01"
+                />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="income-date"
+                  >Fecha del ingreso</label
+                ><input
+                  class="form-control"
+                  id="income-date"
+                  name="date"
+                  type="date"
+                  required
+                />
+              </div>
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="income-note"
+                >Referencia o notas</label
+              ><textarea
+                class="form-control"
+                id="income-note"
+                name="note"
+                maxlength="2000"
+              ></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancelar</button
+            ><button type="submit" class="btn btn-primary">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div
+      class="modal fade"
+      id="delete-modal"
+      tabindex="-1"
+      aria-labelledby="delete-modal-title"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <form id="delete-form" class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title fs-5" id="delete-modal-title">
+              Eliminar registro
+            </h2>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Cerrar"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div
+              class="alert alert-danger form-error"
+              role="alert"
+              hidden
+            ></div>
+            <p>¿Eliminar <strong id="delete-name"></strong>?</p>
+            <p id="delete-detail" class="muted mt-2"></p>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancelar</button
+            ><button type="submit" class="btn btn-primary">Eliminar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script
+      type="module"
+      src="assets/js/ingresos.js?v=20261001-menu-superior-v4"
+    ></script>
+  </body>
+</html>

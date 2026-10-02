@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="Pendientes, gastos fijos, ingresos y cuadre por periodo."
+    />
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="assets/css/styles.css?v=20261001-menu-superior-v4"
+    />
+    <title>Pendientes · Control</title>
+  </head>
+  <body>
+    <div class="workspace">
+      <header class="app-navbar navbar navbar-expand-xl">
+        <div class="navbar-container">
+          <div class="navbar-brand-block">
+            <a
+              class="brand"
+              href="pendientes.html"
+              aria-label="Control, ir a pendientes"
+            >
+              <span class="brand-symbol"
+                ><i class="bi bi-check-lg" aria-hidden="true"></i
+              ></span>
+              control<span class="brand-dot">.</span>
+            </a>
+            <span class="workspace-label">PENDIENTES Y GASTOS</span>
+          </div>
+          <button
+            id="menu-toggle"
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#main-menu"
+            aria-controls="main-menu"
+            aria-expanded="false"
+            aria-label="Abrir o cerrar menú de navegación"
+          >
+            <span class="navbar-toggler-icon" aria-hidden="true"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="main-menu">
+            <nav
+              id="primary-nav"
+              class="navbar-nav"
+              aria-label="Navegación principal"
+            ></nav>
+            <div class="user-block">
+              <span class="avatar" aria-hidden="true"></span>
+              <div>
+                <strong class="user-name"></strong
+                ><small class="user-role"></small>
+              </div>
+              <button
+                id="logout"
+                type="button"
+                class="btn btn-outline-secondary"
+                aria-label="Cerrar sesión"
+              >
+                <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Salir
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+      <div class="workspace-content">
+        <header class="topbar">
+          <div class="breadcrumb-control">
+            <span>Mi espacio</span
+            ><i class="bi bi-chevron-right" aria-hidden="true"></i>
+            <strong id="header-page">Pendientes</strong>
+          </div>
+          <div class="header-tools">
+            <span id="header-date"></span
+            ><span class="role-pill" id="header-role"></span>
+            <button
+              type="button"
+              class="btn icon-button"
+              id="refresh"
+              title="Actualizar"
+              aria-label="Actualizar información"
+            >
+              <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+            </button>
+          </div>
+        </header>
+        <main class="main-content">
+          <div
+            id="page-error"
+            class="alert alert-danger"
+            role="alert"
+            hidden
+          ></div>
+          <a
+            id="session-link"
+            class="btn btn-outline-secondary mb-3"
+            href="login.html"
+            hidden
+            >Volver al login</a
+          >
+          <div id="page-loading" class="loading-state">
+            <span
+              class="spinner-border spinner-border-sm"
+              aria-hidden="true"
+            ></span>
+            Cargando información…
+          </div>
+          <div id="page-content" hidden>
+            <div class="page-header">
+              <div>
+                <span class="eyebrow">ORGANIZACIÓN</span>
+                <h1>Pendientes</h1>
+                <p>
+                  Compras, servicios y compromisos que necesitan seguimiento.
+                </p>
+              </div>
+              <button
+                id="new-task"
+                type="button"
+                class="btn btn-primary"
+                data-admin-visible
+                data-new-task
+                aria-controls="task-modal"
+                aria-haspopup="dialog"
+                aria-describedby="create-access-notice"
+                disabled
+              >
+                <i class="bi bi-plus-lg"></i> Nuevo pendiente
+              </button>
+            </div>
+            <p
+              id="create-access-notice"
+              class="role-access-note"
+              data-create-permission
+              hidden
+            >
+              Tu cuenta permite consultar y exportar. Para agregar registros, tu
+              administrador debe asignarte el rol admin.
+            </p>
+            <div id="stats" class="stats-grid"></div>
+            <section class="panel">
+              <div class="panel-top">
+                <div
+                  class="status-tabs"
+                  role="group"
+                  aria-label="Estado de los pendientes"
+                >
+                  <button
+                    class="tab-button active"
+                    data-filter="activos"
+                    aria-pressed="true"
+                  >
+                    Activos</button
+                  ><button
+                    class="tab-button"
+                    data-filter="completados"
+                    aria-pressed="false"
+                  >
+                    Completados</button
+                  ><button
+                    class="tab-button"
+                    data-filter="todos"
+                    aria-pressed="false"
+                  >
+                    Todos
+                  </button>
+                </div>
+                <button id="export-tasks" class="btn btn-outline-secondary">
+                  <i class="bi bi-download"></i> Exportar CSV
+                </button>
+              </div>
+              <div class="filter-bar">
+                <input
+                  class="form-control search-input"
+                  id="search"
+                  aria-label="Buscar pendiente"
+                  placeholder="Buscar por nombre o categoría…"
+                /><select
+                  class="form-select filter-select"
+                  id="category"
+                  aria-label="Filtrar categoría"
+                >
+                  <option value="todos">Todas las categorías</option></select
+                ><span id="result-count" class="result-count"></span>
+              </div>
+              <div class="table-responsive">
+                <table class="table control-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Pendiente</th>
+                      <th scope="col">Fecha límite</th>
+                      <th scope="col">Prioridad</th>
+                      <th scope="col">Importe / por cubrir</th>
+                      <th scope="col">Estado</th>
+                      <th scope="col">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="task-rows"></tbody>
+                </table>
+              </div>
+            </section>
+            <div class="helper-line">
+              <i class="bi bi-calendar3"></i
+              ><span
+                >Las fechas límite se incluyen en el periodo correspondiente del
+                cuadre.</span
+              >
+            </div>
+          </div>
+        </main>
+        <footer class="app-footer">
+          <span>Control · Pendientes y gastos</span
+          ><span>Importes en pesos mexicanos (MXN)</span>
+        </footer>
+      </div>
+    </div>
+
+    <div
+      id="toast-container"
+      class="toast-container position-fixed bottom-0 end-0 p-3"
+      aria-live="polite"
+    ></div>
+    <div
+      class="modal fade"
+      id="task-modal"
+      tabindex="-1"
+      aria-labelledby="task-modal-title"
+      aria-describedby="task-modal-help"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <form id="task-form" class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title fs-5" id="task-modal-title">
+              Nuevo pendiente
+            </h2>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Cerrar"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div
+              class="alert alert-danger form-error"
+              role="alert"
+              hidden
+            ></div>
+            <p id="task-modal-help" class="modal-help">
+              Agrega una compra o compromiso y compara hasta tres opciones antes
+              de decidir.
+            </p>
+            <input type="hidden" name="id" />
+            <div class="form-field">
+              <label class="form-label" for="task-title"
+                >Nombre del pendiente</label
+              ><input
+                class="form-control"
+                id="task-title"
+                name="title"
+                type="text"
+                required
+                maxlength="160"
+                placeholder="Ej. Comprar equipo de cómputo"
+              />
+            </div>
+            <div class="form-grid">
+              <div class="form-field category-field">
+                <label class="form-label" for="task-category">Categoría</label>
+                <select
+                  class="form-select"
+                  id="task-category"
+                  name="category"
+                  required
+                  data-category-select
+                  aria-describedby="task-category-help"
+                >
+                  <option value="">Selecciona una categoría</option>
+                  <option value="Agua">Agua</option>
+                  <option value="Combustible">Combustible</option>
+                  <option value="Cuentas de ChatGPT">Cuentas de ChatGPT</option>
+                  <option value="Despensa">Despensa</option>
+                  <option value="Gas">Gas</option>
+                  <option value="Impuestos">Impuestos</option>
+                  <option value="Inmuebles">Inmuebles</option>
+                  <option value="Insumos">Insumos</option>
+                  <option value="Internet">Internet</option>
+                  <option value="Limpieza">Limpieza</option>
+                  <option value="Luz">Luz</option>
+                  <option value="Mantenimiento">Mantenimiento</option>
+                  <option value="Otros">Otros</option>
+                  <option value="Papelería">Papelería</option>
+                  <option value="Renta almacén">Renta almacén</option>
+                  <option value="Renta bazar">Renta bazar</option>
+                  <option value="Renta vivienda">Renta vivienda</option>
+                  <option value="Seguridad">Seguridad</option>
+                  <option value="Seguros">Seguros</option>
+                  <option value="Servicios">Servicios</option>
+                  <option value="Sueldos">Sueldos</option>
+                  <option value="Suscripciones">Suscripciones</option>
+                  <option value="Tecnología">Tecnología</option>
+                  <option value="Telefonía">Telefonía</option>
+                  <option value="Transporte">Transporte</option>
+                  <option value="__nueva_categoria__" data-new-category>
+                    + Agregar nueva categoría…
+                  </option>
+                </select>
+                <div class="form-text" id="task-category-help">
+                  25 categorías básicas. Para usar otra, elige «Agregar nueva
+                  categoría…».
+                </div>
+                <div class="mt-2" data-category-custom hidden>
+                  <label class="form-label" for="task-category-custom"
+                    >Nueva categoría</label
+                  >
+                  <input
+                    class="form-control"
+                    id="task-category-custom"
+                    name="categoryCustom"
+                    type="text"
+                    required
+                    disabled
+                    maxlength="80"
+                    placeholder="Escribe el nombre de la categoría"
+                  />
+                  <div class="form-text">
+                    Se agregará a la lista al guardar el registro.
+                  </div>
+                </div>
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="task-amount"
+                  >Importe estimado (MXN)</label
+                ><input
+                  class="form-control"
+                  id="task-amount"
+                  name="amount"
+                  type="number"
+                  required
+                  min="0"
+                  max="1000000000"
+                  step="0.01"
+                />
+                <div class="form-text">Usa 0 si no implica una compra.</div>
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="task-dueDate">Fecha límite</label
+                ><input
+                  class="form-control"
+                  id="task-dueDate"
+                  name="dueDate"
+                  type="date"
+                  required
+                />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="task-priority">Prioridad</label
+                ><select class="form-select" id="task-priority" name="priority">
+                  <option value="alta">Alta</option>
+                  <option value="media">Media</option>
+                  <option value="baja">Baja</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="task-status">Estado</label
+              ><select class="form-select" id="task-status" name="status">
+                <option value="pendiente">Pendiente</option>
+                <option value="en_proceso">En proceso</option>
+                <option value="completado">Completado (sin importe)</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="task-description"
+                >Descripción o notas</label
+              ><textarea
+                class="form-control"
+                id="task-description"
+                name="description"
+                maxlength="2000"
+              ></textarea>
+            </div>
+            <h3 class="form-section-title">
+              Opciones de compra <small>Hasta 3 enlaces · opcional</small>
+            </h3>
+            <div class="form-field">
+              <label class="form-label" for="task-link1">Opción 1</label
+              ><input
+                class="form-control"
+                id="task-link1"
+                name="link1"
+                type="url"
+                maxlength="2048"
+                placeholder="https://…"
+              />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="task-link2">Opción 2</label
+              ><input
+                class="form-control"
+                id="task-link2"
+                name="link2"
+                type="url"
+                maxlength="2048"
+                placeholder="https://…"
+              />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="task-link3">Opción 3</label
+              ><input
+                class="form-control"
+                id="task-link3"
+                name="link3"
+                type="url"
+                maxlength="2048"
+                placeholder="https://…"
+              />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancelar</button
+            ><button type="submit" class="btn btn-primary">
+              Guardar pendiente
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div
+      class="modal fade"
+      id="detail-modal"
+      tabindex="-1"
+      aria-labelledby="detail-modal-title"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title fs-5" id="detail-modal-title">
+              Detalle del pendiente
+            </h2>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Cerrar"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div
+              class="alert alert-danger form-error"
+              role="alert"
+              hidden
+            ></div>
+            <div id="task-detail"></div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="modal fade"
+      id="payment-modal"
+      tabindex="-1"
+      aria-labelledby="payment-modal-title"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <form id="payment-form" class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title fs-5" id="payment-modal-title">
+              Registrar pago
+            </h2>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Cerrar"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div
+              class="alert alert-danger form-error"
+              role="alert"
+              hidden
+            ></div>
+            <input type="hidden" name="id" />
+            <p id="payment-concept" class="muted mb-3"></p>
+            <div class="payment-summary">
+              <span>Por cubrir</span><strong id="payment-remaining"></strong>
+            </div>
+            <div class="form-grid">
+              <div class="form-field">
+                <label class="form-label" for="payment-amount"
+                  >Importe pagado (MXN)</label
+                ><input
+                  class="form-control"
+                  id="payment-amount"
+                  name="amount"
+                  type="number"
+                  required
+                  min="0.01"
+                  max="1000000000"
+                  step="0.01"
+                />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="payment-date"
+                  >Fecha del pago</label
+                ><input
+                  class="form-control"
+                  id="payment-date"
+                  name="date"
+                  type="date"
+                  required
+                />
+              </div>
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="payment-note"
+                >Referencia o notas</label
+              ><textarea
+                class="form-control"
+                id="payment-note"
+                name="note"
+                maxlength="2000"
+              ></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancelar</button
+            ><button type="submit" class="btn btn-primary">
+              Registrar pago
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div
+      class="modal fade"
+      id="delete-modal"
+      tabindex="-1"
+      aria-labelledby="delete-modal-title"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <form id="delete-form" class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title fs-5" id="delete-modal-title">
+              Eliminar registro
+            </h2>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Cerrar"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div
+              class="alert alert-danger form-error"
+              role="alert"
+              hidden
+            ></div>
+            <p>¿Eliminar <strong id="delete-name"></strong>?</p>
+            <p id="delete-detail" class="muted mt-2"></p>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancelar</button
+            ><button type="submit" class="btn btn-primary">Eliminar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script
+      type="module"
+      src="assets/js/pendientes.js?v=20261001-menu-superior-v4"
+    ></script>
+  </body>
+</html>
