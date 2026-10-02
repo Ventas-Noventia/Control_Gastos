@@ -11,8 +11,8 @@ import {
   payments,
   rowActions,
   pageError,
-} from "./ui.js?v=20261001-menu-superior-v4";
-import { setupMovementForm } from "./movimiento-form.js?v=20261001-menu-superior-v4";
+} from "./ui.js?v=20261002-noventia-v6";
+import { setupMovementForm } from "./movimiento-form.js?v=20261002-noventia-v6";
 import {
   money,
   today,
@@ -20,7 +20,7 @@ import {
   isDate,
   periodRange,
   reconcile,
-} from "./finanzas.js?v=20261001-menu-superior-v4";
+} from "./finanzas.js?v=20261002-noventia-v6";
 let ctx,
   report = null,
   range,

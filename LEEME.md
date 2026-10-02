@@ -1,4 +1,4 @@
-# Control · Pendientes y gastos
+# Noventia · Pendientes y gastos
 
 Proyecto independiente con **HTML, CSS y JavaScript**, Bootstrap 5 y base de datos PostgreSQL en Supabase. Cada módulo tiene su propia página y su propio archivo JavaScript. El login usa correo y contraseña con Supabase Auth.
 
@@ -23,7 +23,7 @@ Edita `assets/js/config.js`:
 ```js
 export const SUPABASE_URL = "https://TU_PROYECTO.supabase.co";
 export const SUPABASE_ANON_KEY = "TU_CLAVE_PUBLICA";
-export const APP_NAME = "Control";
+export const APP_NAME = "Noventia";
 ```
 
 La clave del navegador debe ser pública: **publishable o anon**. Las claves `service_role` y `sb_secret_…` son privadas y nunca deben ponerse en HTML o JavaScript del navegador. Los permisos de cada usuario se aplican en PostgreSQL.
@@ -35,9 +35,13 @@ La clave del navegador debe ser pública: **publishable o anon**. Las claves `se
 3. Abre `database/02_activar_administrador.sql` y sustituye `TU_CORREO_ADMIN@empresa.com` por ese correo.
 4. Ejecuta ese archivo en SQL Editor. Comprueba que la consulta final muestra `role = admin` y `active = true`.
 
-El registro público no forma parte de este sistema. Desactiva las altas públicas en la configuración de Authentication de Supabase y crea las cuentas desde el panel. Las cuentas nuevas comienzan desactivadas y con rol consulta; solo un administrador puede darles acceso.
+El registro público no forma parte de este sistema. Desactiva las altas públicas en la configuración de Authentication de Supabase y crea las cuentas desde **Usuarios** después de activar la función descrita en el siguiente paso. Las cuentas creadas directamente en Auth comienzan desactivadas y con rol consulta. Desde Usuarios, el administrador asigna su rol y estado al crearlas.
 
-### 4. Abre la aplicación
+### 4. Activa usuarios, fotos y marca
+
+Ejecuta `database/03_usuarios_fotos_y_marca.sql` y publica la Edge Function `control-admin` siguiendo los pasos 2 y 3 de **[ACTUALIZACION_USUARIOS_Y_MARCA.md](ACTUALIZACION_USUARIOS_Y_MARCA.md)**. Es código JavaScript que se ejecuta en Supabase; permite administrar cuentas y contraseñas sin poner claves privadas en el navegador.
+
+### 5. Abre la aplicación
 
 1. Descomprime el ZIP completo y abre su carpeta en Visual Studio Code.
 2. Con una extensión de servidor estático como **Live Server**, abre `login.html`.
@@ -51,33 +55,38 @@ python -m http.server 8000
 
 Y abre `http://localhost:8000/login.html`. En algunos equipos el comando es `python3`.
 
-Los módulos JavaScript necesitan que las páginas se sirvan por HTTP o HTTPS; abrir los HTML con doble clic como `file://` no basta. El sistema necesita internet para Supabase y las librerías de Bootstrap. No requiere npm, compilación ni un servidor propio de Node, PHP o Python en producción: puedes subir la carpeta a un hosting estático con HTTPS.
+Los módulos JavaScript necesitan que las páginas se sirvan por HTTP o HTTPS; abrir los HTML con doble clic como `file://` no basta. El sistema necesita internet para Supabase y las librerías de Bootstrap. El sitio no requiere compilación ni un servidor propio de Node, PHP o Python en producción; usa Supabase para la base y la función de usuarios. El CLI se usa solo para publicar esa función: puedes subir la carpeta a un hosting estático con HTTPS.
+
+## Identidad de Noventia
+
+La paleta usa los colores del logo: azul marino `#002654`, turquesa `#00B8D5` y coral `#FE7555`. El azul se utiliza en botones y navegación, el turquesa en acentos y selecciones, y el coral en detalles. Las superficies claras y los tonos de texto mantienen la lectura legible.
+
+El PNG original se conserva intacto en `assets/img/noventia-logo.png`. El logo aparece desde el HTML, incluido el login, aunque todavía no se haya configurado la marca en la base de datos. Sus márgenes transparentes se ajustan con una ventana de CSS. Para aplicar solo esta identidad a un proyecto existente, sigue `ACTUALIZACION_IDENTIDAD_NOVENTIA.md`.
 
 ## Usuarios y permisos
 
-| Rol      | Puede hacer                                                                                                                               |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| Admin    | Crear, editar y eliminar pendientes, gastos fijos, ingresos y pagos; editar el saldo inicial; administrar perfiles; consultar y exportar. |
-| Consulta | Ver pendientes, gastos fijos, ingresos y cuadre; consultar periodos; exportar CSV e imprimir el cuadre.                                   |
+| Rol      | Puede hacer                                                                                                                                                                                |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Admin    | Crear, editar y eliminar pendientes, gastos fijos, ingresos y pagos; editar el saldo inicial; crear, editar y eliminar cuentas y contraseñas; personalizar la marca; consultar y exportar. |
+| Consulta | Ver pendientes, gastos fijos, ingresos y cuadre; consultar periodos; exportar CSV e imprimir el cuadre.                                                                                    |
 
-Para agregar a otra persona:
+Para agregar a otra persona, entra a **Usuarios → Nuevo usuario**. Escribe nombre, correo, contraseña y confirmación, elige admin o consulta y, si quieres, sube una foto. Puedes crear la cuenta activa o desactivada. El correo se confirma al crearla; no se envían invitaciones.
 
-1. Crea su cuenta en **Authentication → Users** de Supabase.
-2. Entra al sistema como admin y abre **Usuarios**.
-3. Edita su perfil, elige admin o consulta y activa la cuenta.
+Usa el lápiz para editar nombre, correo, foto, rol, acceso o contraseña. Al editar, deja la contraseña vacía para conservarla; la anterior nunca se muestra. La papelera elimina la cuenta después de confirmar y conserva sus movimientos financieros. Tu propia cuenta puede editar sus datos, pero conserva el acceso de administrador y no puede eliminarse desde aquí.
 
-La página Usuarios cambia nombre, rol y estado. La creación de contraseñas y cuentas se hace en Supabase Auth. El sistema impide cambiar tu propio rol o desactivar tu propia cuenta desde Usuarios.
+El logo original de Noventia ya viene incluido. En **Marca** puedes reemplazarlo, restaurarlo y cambiar el nombre de la empresa. Se muestran en el login y en el encabezado de todas las páginas. El menú de usuarios y marca es exclusivo de admin.
 
 ## Módulos
 
-| Página              | Funcionalidad                                                                                                                                    |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `login.html`        | Inicio de sesión con correo y contraseña.                                                                                                        |
-| `pendientes.html`   | Compras y compromisos con categoría libre, importe, fecha, prioridad, estado, notas y hasta tres enlaces de compra. CRUD, pagos parciales y CSV. |
-| `gastos-fijos.html` | Gastos semanales, quincenales o mensuales, vencimientos, pagos, pausas y cambios de costo con fecha de vigencia.                                 |
-| `ingresos.html`     | Entradas de dinero recibidas, fechas, notas, filtros, edición, eliminación y CSV.                                                                |
-| `cuadre.html`       | Saldo inicial, ingresos, pagos, compromisos, saldo de caja y proyección por periodo. CSV e impresión/PDF.                                        |
-| `usuarios.html`     | Administración de perfiles y permisos.                                                                                                           |
+| Página              | Funcionalidad                                                                                                                                                    |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `login.html`        | Inicio de sesión con correo y contraseña.                                                                                                                        |
+| `pendientes.html`   | Compras y compromisos con categoría seleccionable o nueva, importe, fecha, prioridad, estado, notas y hasta tres enlaces de compra. CRUD, pagos parciales y CSV. |
+| `gastos-fijos.html` | Gastos semanales, quincenales o mensuales, vencimientos, pagos, pausas y cambios de costo con fecha de vigencia.                                                 |
+| `ingresos.html`     | Entradas de dinero recibidas, fechas, notas, filtros, edición, eliminación y CSV.                                                                                |
+| `cuadre.html`       | Saldo inicial, ingresos, pagos, compromisos, saldo de caja y proyección por periodo. CSV e impresión/PDF.                                                        |
+| `usuarios.html`     | Creación, edición y eliminación de cuentas, fotos, contraseñas y permisos.                                                                                       |
+| `marca.html`        | Nombre y logo compartidos para el login y los encabezados.                                                                                                       |
 
 Las categorías predeterminadas son Luz, Agua, Gas, Internet, Telefonía, Cuentas de ChatGPT, Renta bazar, Renta almacén, Renta vivienda, Papelería, Insumos, Mantenimiento, Transporte, Combustible, Seguridad, Impuestos, Seguros, Servicios, Inmuebles, Despensa, Limpieza, Tecnología, Sueldos, Suscripciones y Otros.
 
@@ -113,9 +122,9 @@ Un pendiente con importe mayor que cero se completa al cubrirlo con pagos. Para 
 
 ## Archivos y organización
 
-Cada página carga su módulo en `assets/js/`. El CSS común está en `assets/css/styles.css`. Los módulos `auth.js`, `database.js`, `ui.js` y `finanzas.js` comparten autenticación, acceso a datos, controles y cálculos. La configuración editable vive únicamente en `config.js`.
+Cada página carga su módulo en `assets/js/`. El CSS común está en `assets/css/styles.css`. Los módulos `auth.js`, `database.js`, `ui.js` y `finanzas.js` comparten autenticación, acceso a datos, controles y cálculos. La conexión editable vive en `config.js`. El código JavaScript de la función protegida está separado en `supabase/functions/control-admin/`. La migración 03 agrega las fotos y la marca sin borrar los datos existentes.
 
-No hay React, TypeScript, archivos de compilación ni paquetes que instalar para ejecutar la aplicación. Bootstrap 5.3.8, Bootstrap Icons 1.13.1 y Supabase JS 2 se cargan desde CDN.
+No hay React, TypeScript ni archivos de compilación. El frontend no necesita instalar paquetes; para publicar la función de usuarios se usa el CLI de Supabase. Bootstrap 5.3.8, Bootstrap Icons 1.13.1 y Supabase JS 2 se cargan desde CDN.
 
 ## Comprobaciones realizadas
 
@@ -125,7 +134,7 @@ Se verificaron los cálculos de recurrencia, años bisiestos, historial de costo
 node tests/finanzas.test.mjs
 ```
 
-El SQL también se ejecutó en PostgreSQL mediante PGlite, simulando las identidades de Supabase, para comprobar el esquema, los perfiles, las restricciones y los permisos de admin, consulta y anónimo. La conexión de este ZIP a un proyecto real se realiza con los pasos de instalación anteriores.
+El SQL también se ejecutó en PostgreSQL mediante PGlite, simulando las identidades de Supabase, para comprobar el esquema, los perfiles, las restricciones y los permisos de admin, consulta y anónimo. También se probaron la migración 03, el bloqueo de sesiones y roles, la creación y actualización de credenciales, las fotos, la eliminación y la conservación de movimientos. Auth y Storage se simularon en las pruebas; no se desplegó en tu Supabase real. La conexión de este ZIP se realiza con los pasos de instalación anteriores.
 
 ## Si algo no carga
 
@@ -137,5 +146,7 @@ El SQL también se ejecutó en PostgreSQL mediante PGlite, simulando las identid
 | Correo sin confirmar                           | Confirma el correo en Supabase Auth.                                                             |
 | No se pudo ingresar                            | Revisa correo, contraseña, conexión y el proveedor Email en Authentication.                      |
 | La página no ejecuta el JavaScript             | Abre mediante un servidor HTTP/HTTPS, no con doble clic en el HTML.                              |
+
+Si el formulario de Usuarios o Marca no puede guardar, sigue la tabla de ayuda de `ACTUALIZACION_USUARIOS_Y_MARCA.md`.
 
 Documentación oficial: [Supabase JS](https://supabase.com/docs/reference/javascript/installing), [inicio de sesión con contraseña](https://supabase.com/docs/reference/javascript/auth-signinwithpassword), [permisos RLS](https://supabase.com/docs/guides/database/postgres/row-level-security), [Bootstrap](https://getbootstrap.com/docs/5.3/getting-started/introduction/).

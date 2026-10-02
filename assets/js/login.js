@@ -1,5 +1,10 @@
-import { currentProfile, signIn, nextPage } from "./auth.js";
-import { getClient } from "./supabase-client.js";
+import {
+  currentProfile,
+  signIn,
+  nextPage,
+} from "./auth.js?v=20261002-noventia-v6";
+import { getClient } from "./supabase-client.js?v=20261002-noventia-v6";
+import { loadBrand } from "./branding.js?v=20261002-noventia-v6";
 const form = document.getElementById("login-form"),
   errorBox = document.getElementById("login-error");
 function showError(message) {
@@ -8,6 +13,7 @@ function showError(message) {
 }
 try {
   getClient();
+  await loadBrand();
   const profile = await currentProfile();
   if (profile) location.replace(nextPage());
 } catch (error) {

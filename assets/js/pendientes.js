@@ -21,9 +21,14 @@ import {
   setCategory,
   readCategory,
   availableCategories,
-} from "./ui.js?v=20261001-menu-superior-v4";
-import { saveTask } from "./database.js";
-import { money, today, dateLabel, obligations } from "./finanzas.js?v=20261001-menu-superior-v4";
+} from "./ui.js?v=20261002-noventia-v6";
+import { saveTask } from "./database.js?v=20261002-noventia-v6";
+import {
+  money,
+  today,
+  dateLabel,
+  obligations,
+} from "./finanzas.js?v=20261002-noventia-v6";
 let ctx,
   tab = "activos",
   filtered = [],

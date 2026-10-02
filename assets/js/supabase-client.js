@@ -1,4 +1,7 @@
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./config.js";
+import {
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY,
+} from "./config.js?v=20261002-noventia-v6";
 let instance;
 export function getClient() {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {

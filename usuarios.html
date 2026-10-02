@@ -7,7 +7,7 @@
       name="description"
       content="Pendientes, gastos fijos, ingresos y cuadre por periodo."
     />
-    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="assets/img/noventia-logo.png" type="image/png" />
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -20,9 +20,9 @@
     />
     <link
       rel="stylesheet"
-      href="assets/css/styles.css?v=20261001-menu-superior-v4"
+      href="assets/css/styles.css?v=20261002-noventia-v6"
     />
-    <title>Usuarios · Control</title>
+    <title>Usuarios · Noventia</title>
   </head>
   <body>
     <div class="workspace">
@@ -30,14 +30,17 @@
         <div class="navbar-container">
           <div class="navbar-brand-block">
             <a
-              class="brand"
+              class="brand has-logo"
               href="pendientes.html"
-              aria-label="Control, ir a pendientes"
+              aria-label="Noventia, ir a pendientes"
             >
-              <span class="brand-symbol"
-                ><i class="bi bi-check-lg" aria-hidden="true"></i
-              ></span>
-              control<span class="brand-dot">.</span>
+              <span class="logo-window uses-original"
+                ><img
+                  class="brand-logo"
+                  data-brand-logo
+                  src="assets/img/noventia-logo.png"
+                  alt="Noventia" /></span
+              ><span class="brand-wordmark" data-brand-name>Noventia</span>
             </a>
             <span class="workspace-label">PENDIENTES Y GASTOS</span>
           </div>
@@ -125,15 +128,38 @@
                 <span class="eyebrow">ACCESOS Y PERMISOS</span>
                 <h1>Usuarios</h1>
                 <p>
-                  Asigna a cada cuenta lo que puede hacer dentro del sistema.
+                  Crea cuentas, asigna permisos y actualiza sus datos de acceso.
                 </p>
               </div>
+              <button
+                class="btn btn-primary"
+                type="button"
+                id="new-user"
+                data-admin-visible
+                disabled
+              >
+                <i class="bi bi-person-plus" aria-hidden="true"></i> Nuevo
+                usuario
+              </button>
             </div>
             <div id="stats" class="stats-grid three-stats"></div>
             <section class="panel">
               <div class="panel-top">
                 <h2>Cuentas autorizadas</h2>
                 <span class="status-badge purple">2 tipos de usuario</span>
+              </div>
+              <div class="filter-bar">
+                <div class="search-input">
+                  <i class="bi bi-search" aria-hidden="true"></i
+                  ><input
+                    class="form-control"
+                    id="user-search"
+                    type="search"
+                    placeholder="Buscar nombre o correo…"
+                    aria-label="Buscar usuarios"
+                  />
+                </div>
+                <span class="result-count" id="user-count"></span>
               </div>
               <div class="table-responsive">
                 <table class="table control-table">
@@ -156,7 +182,8 @@
                 <h2>Administrador</h2>
                 <p>
                   Crea, edita y elimina los registros. Consulta y exporta el
-                  cuadre; administra los permisos de otras cuentas.
+                  cuadre; crea cuentas, asigna contraseñas y administra la
+                  marca.
                 </p>
               </section>
               <section>
@@ -171,20 +198,20 @@
             <div class="helper-line">
               <i class="bi bi-info-circle"></i
               ><span
-                >Para agregar una cuenta, créala en Authentication → Users de
-                Supabase. Después aparecerá aquí para que autorices su
-                acceso.</span
+                >Comparte el correo y la contraseña con cada persona. Puedes
+                cambiar su contraseña, pausar el acceso o eliminar la cuenta
+                desde esta página.</span
               >
             </div>
           </div>
         </main>
         <footer class="app-footer">
-          <span>Control · Pendientes y gastos</span
+          <span
+            ><span data-brand-name>Noventia</span> · Pendientes y gastos</span
           ><span>Importes en pesos mexicanos (MXN)</span>
         </footer>
       </div>
     </div>
-    <datalist id="category-options"></datalist>
     <div
       id="toast-container"
       class="toast-container position-fixed bottom-0 end-0 p-3"
@@ -197,11 +224,13 @@
       aria-labelledby="profile-modal-title"
       aria-hidden="true"
     >
-      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <form id="profile-form" class="modal-content">
+      <div
+        class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
+      >
+        <form id="profile-form" class="modal-content" autocomplete="off">
           <div class="modal-header">
             <h2 class="modal-title fs-5" id="profile-modal-title">
-              Editar usuario
+              Nuevo usuario
             </h2>
             <button
               type="button"
@@ -217,46 +246,144 @@
               hidden
             ></div>
             <input type="hidden" name="id" />
-            <div class="form-field">
-              <label class="form-label" for="profile-name">Nombre</label
-              ><input
-                class="form-control"
-                id="profile-name"
-                name="name"
-                type="text"
-                required
-                maxlength="120"
-              />
+            <div class="profile-photo-field">
+              <span
+                class="avatar avatar-large"
+                id="profile-preview"
+                aria-hidden="true"
+                >US</span
+              >
+              <div class="flex-grow-1">
+                <label class="form-label" for="profile-image"
+                  >Foto del usuario</label
+                >
+                <input
+                  class="form-control"
+                  id="profile-image"
+                  name="image"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  aria-describedby="profile-image-help"
+                />
+                <div class="form-text" id="profile-image-help">
+                  Opcional. PNG, JPG o WEBP de hasta 2 MB.
+                </div>
+                <div class="form-check mt-2" id="profile-remove-row" hidden>
+                  <input
+                    class="form-check-input"
+                    id="profile-remove"
+                    name="removeImage"
+                    type="checkbox"
+                  /><label class="form-check-label" for="profile-remove"
+                    >Quitar foto actual</label
+                  >
+                </div>
+              </div>
             </div>
-            <div class="form-field">
-              <label class="form-label" for="profile-email">Correo</label
-              ><input
-                class="form-control"
-                id="profile-email"
-                name="email"
-                type="email"
-                disabled
-              />
+            <div class="form-grid">
+              <div class="form-field">
+                <label class="form-label" for="profile-name">Nombre</label
+                ><input
+                  class="form-control"
+                  id="profile-name"
+                  name="name"
+                  type="text"
+                  required
+                  maxlength="120"
+                  autocomplete="off"
+                />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="profile-email"
+                  >Correo para iniciar sesión</label
+                ><input
+                  class="form-control"
+                  id="profile-email"
+                  name="email"
+                  type="email"
+                  required
+                  maxlength="254"
+                  autocomplete="off"
+                />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="profile-role"
+                  >Tipo de usuario</label
+                ><select
+                  class="form-select"
+                  id="profile-role"
+                  name="role"
+                  required
+                >
+                  <option value="consulta">Consulta</option>
+                  <option value="admin">Administrador</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="profile-active"
+                  >Acceso a la cuenta</label
+                >
+                <div class="form-check form-switch switch-row">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    role="switch"
+                    name="active"
+                    id="profile-active"
+                  /><label class="form-check-label" for="profile-active"
+                    >Acceso activo</label
+                  >
+                </div>
+              </div>
             </div>
-            <div class="form-field">
-              <label class="form-label" for="profile-role"
-                >Tipo de usuario</label
-              ><select class="form-select" id="profile-role" name="role">
-                <option value="consulta">Consulta</option>
-                <option value="admin">Administrador</option>
-              </select>
+            <div class="alert alert-info" id="profile-own-note" hidden>
+              Puedes editar tus datos, foto y contraseña. Tu propia cuenta
+              conserva acceso de administrador.
             </div>
-            <div class="form-check form-switch switch-row">
-              <label class="form-check-label" for="profile-active"
-                >Acceso activo</label
-              ><input
-                class="form-check-input"
-                type="checkbox"
-                role="switch"
-                name="active"
-                id="profile-active"
-              />
+            <div class="form-grid">
+              <div class="form-field">
+                <label class="form-label" for="profile-password"
+                  >Contraseña</label
+                >
+                <div class="password-control">
+                  <input
+                    class="form-control"
+                    id="profile-password"
+                    name="password"
+                    type="password"
+                    minlength="8"
+                    maxlength="72"
+                    autocomplete="new-password"
+                    aria-describedby="profile-password-help"
+                  /><button
+                    type="button"
+                    class="btn icon-button"
+                    id="profile-password-toggle"
+                    aria-label="Mostrar contraseña"
+                    aria-pressed="false"
+                  >
+                    <i class="bi bi-eye" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="profile-password-confirm"
+                  >Confirmar contraseña</label
+                ><input
+                  class="form-control"
+                  id="profile-password-confirm"
+                  name="passwordConfirm"
+                  type="password"
+                  minlength="8"
+                  maxlength="72"
+                  autocomplete="new-password"
+                />
+              </div>
             </div>
+            <p class="form-text" id="profile-password-help">
+              Asigna una contraseña de al menos 8 caracteres para iniciar
+              sesión.
+            </p>
           </div>
           <div class="modal-footer">
             <button
@@ -265,7 +392,60 @@
               data-bs-dismiss="modal"
             >
               Cancelar</button
-            ><button type="submit" class="btn btn-primary">Guardar</button>
+            ><button type="submit" class="btn btn-primary" id="profile-submit">
+              Crear usuario
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div
+      class="modal fade"
+      id="delete-user-modal"
+      tabindex="-1"
+      aria-labelledby="delete-user-title"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <form id="delete-user-form" class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title fs-5" id="delete-user-title">
+              Eliminar usuario
+            </h2>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Cerrar"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div
+              class="alert alert-danger form-error"
+              role="alert"
+              hidden
+            ></div>
+            <p>
+              Se eliminará la cuenta de
+              <strong id="delete-user-name"></strong> y ya no podrá iniciar
+              sesión.
+            </p>
+            <p class="muted mt-2" id="delete-user-email"></p>
+            <p class="form-text mt-3">
+              Los pendientes, gastos, ingresos y pagos registrados se conservan.
+              La eliminación de la cuenta es definitiva.
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancelar</button
+            ><button type="submit" class="btn btn-danger">
+              Eliminar usuario
+            </button>
           </div>
         </form>
       </div>
@@ -278,7 +458,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script
       type="module"
-      src="assets/js/usuarios.js?v=20261001-menu-superior-v4"
+      src="assets/js/usuarios.js?v=20261002-noventia-v6"
     ></script>
   </body>
 </html>

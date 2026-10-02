@@ -1,11 +1,12 @@
-import { requireProfile, signOut } from "./auth.js";
-import { loadState } from "./database.js";
+import { requireProfile, signOut } from "./auth.js?v=20261002-noventia-v6";
+import { loadState } from "./database.js?v=20261002-noventia-v6";
+import { loadBrand } from "./branding.js?v=20261002-noventia-v6";
 import {
   categories,
   today,
   dateLabel,
   money,
-} from "./finanzas.js?v=20261001-menu-superior-v4";
+} from "./finanzas.js?v=20261002-noventia-v6";
 export const $ = (selector) => document.querySelector(selector);
 export const esc = (value) =>
   String(value ?? "").replace(
@@ -158,6 +159,7 @@ function navigation(profile, page) {
     ["ingresos", "wallet2", "Ingresos"],
     ["cuadre", "bar-chart", "Cuadre"],
     ...(profile.role === "admin" ? [["usuarios", "people", "Usuarios"]] : []),
+    ...(profile.role === "admin" ? [["marca", "image", "Marca"]] : []),
   ];
   return links
     .map(
@@ -173,7 +175,17 @@ function syncProfile(profile, page, loading = false) {
   $(".user-name").title = profile.name;
   $(".user-role").textContent =
     profile.role === "admin" ? "Administrador" : "Consulta";
-  $(".avatar").textContent = profile.name.slice(0, 2).toUpperCase();
+  const avatar = $(".user-block .avatar");
+  avatar.replaceChildren();
+  if (profile.avatarUrl) {
+    const image = document.createElement("img");
+    image.src = profile.avatarUrl;
+    image.alt = "";
+    image.onerror = () => {
+      avatar.textContent = profile.name.slice(0, 2).toUpperCase();
+    };
+    avatar.append(image);
+  } else avatar.textContent = profile.name.slice(0, 2).toUpperCase();
   $("#header-role").textContent =
     profile.role === "admin" ? "Admin" : "Consulta";
   document.querySelectorAll("[data-admin]").forEach((el) => {
@@ -220,6 +232,7 @@ function setupNavigation() {
 }
 export async function initPage(page, title, adminOnly = false) {
   setupNavigation();
+  await loadBrand();
   const profile = await requireProfile(adminOnly);
   syncProfile(profile, page, true);
   $("#header-page").textContent = title;

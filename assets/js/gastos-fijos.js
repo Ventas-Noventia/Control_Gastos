@@ -19,8 +19,8 @@ import {
   assertAdmin,
   setCategory,
   readCategory,
-} from "./ui.js?v=20261001-menu-superior-v4";
-import { saveExpense } from "./database.js";
+} from "./ui.js?v=20261002-noventia-v6";
+import { saveExpense } from "./database.js?v=20261002-noventia-v6";
 import {
   money,
   today,
@@ -28,7 +28,7 @@ import {
   periodRange,
   obligations,
   scheduleAt,
-} from "./finanzas.js?v=20261001-menu-superior-v4";
+} from "./finanzas.js?v=20261002-noventia-v6";
 const weekdays = [
   "Domingo",
   "Lunes",

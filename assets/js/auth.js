@@ -1,10 +1,11 @@
-import { getClient } from "./supabase-client.js";
+import { getClient } from "./supabase-client.js?v=20261002-noventia-v6";
 const safePages = [
   "pendientes.html",
   "gastos-fijos.html",
   "ingresos.html",
   "cuadre.html",
   "usuarios.html",
+  "marca.html",
 ];
 export function nextPage() {
   const value = new URLSearchParams(location.search).get("next");
@@ -19,7 +20,7 @@ export async function currentProfile() {
   if (error || !user) return null;
   const result = await db
     .from("control_profiles")
-    .select("id,email,name,role,active")
+    .select("*")
     .eq("id", user.id)
     .single();
   if (result.error)

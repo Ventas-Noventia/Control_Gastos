@@ -9,9 +9,14 @@ import {
   setupDeletion,
   rowActions,
   pageError,
-} from "./ui.js?v=20261001-menu-superior-v4";
-import { setupMovementForm } from "./movimiento-form.js?v=20261001-menu-superior-v4";
-import { money, today, dateLabel, periodRange } from "./finanzas.js?v=20261001-menu-superior-v4";
+} from "./ui.js?v=20261002-noventia-v6";
+import { setupMovementForm } from "./movimiento-form.js?v=20261002-noventia-v6";
+import {
+  money,
+  today,
+  dateLabel,
+  periodRange,
+} from "./finanzas.js?v=20261002-noventia-v6";
 let ctx,
   filtered = [];
 const month = periodRange("mes", today());

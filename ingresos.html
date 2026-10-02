@@ -7,7 +7,7 @@
       name="description"
       content="Pendientes, gastos fijos, ingresos y cuadre por periodo."
     />
-    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="assets/img/noventia-logo.png" type="image/png" />
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -20,9 +20,9 @@
     />
     <link
       rel="stylesheet"
-      href="assets/css/styles.css?v=20261001-menu-superior-v4"
+      href="assets/css/styles.css?v=20261002-noventia-v6"
     />
-    <title>Ingresos · Control</title>
+    <title>Ingresos · Noventia</title>
   </head>
   <body>
     <div class="workspace">
@@ -30,14 +30,17 @@
         <div class="navbar-container">
           <div class="navbar-brand-block">
             <a
-              class="brand"
+              class="brand has-logo"
               href="pendientes.html"
-              aria-label="Control, ir a pendientes"
+              aria-label="Noventia, ir a pendientes"
             >
-              <span class="brand-symbol"
-                ><i class="bi bi-check-lg" aria-hidden="true"></i
-              ></span>
-              control<span class="brand-dot">.</span>
+              <span class="logo-window uses-original"
+                ><img
+                  class="brand-logo"
+                  data-brand-logo
+                  src="assets/img/noventia-logo.png"
+                  alt="Noventia" /></span
+              ><span class="brand-wordmark" data-brand-name>Noventia</span>
             </a>
             <span class="workspace-label">PENDIENTES Y GASTOS</span>
           </div>
@@ -197,7 +200,8 @@
           </div>
         </main>
         <footer class="app-footer">
-          <span>Control · Pendientes y gastos</span
+          <span
+            ><span data-brand-name>Noventia</span> · Pendientes y gastos</span
           ><span>Importes en pesos mexicanos (MXN)</span>
         </footer>
       </div>
@@ -409,7 +413,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script
       type="module"
-      src="assets/js/ingresos.js?v=20261001-menu-superior-v4"
+      src="assets/js/ingresos.js?v=20261002-noventia-v6"
     ></script>
   </body>
 </html>

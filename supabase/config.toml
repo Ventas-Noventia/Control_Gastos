@@ -1,0 +1,5 @@
+[functions.control-admin]
+enabled = true
+# La función valida el JWT con Auth y comprueba el rol en la base de datos.
+verify_jwt = false
+entrypoint = './functions/control-admin/index.js'

@@ -1,5 +1,6 @@
-import { getClient } from "./supabase-client.js";
-import { currentProfile } from "./auth.js";
+import { getClient } from "./supabase-client.js?v=20261002-noventia-v6";
+import { currentProfile } from "./auth.js?v=20261002-noventia-v6";
+import { loadAvatars } from "./avatars.js?v=20261002-noventia-v6";
 /** Supabase limita normalmente cada respuesta a 1000 filas: carga todas por páginas. */
 async function readAll(table, options = {}) {
   const rows = [];
@@ -29,6 +30,7 @@ export async function loadState() {
     readAll("control_movements", { live: true }),
     actor.role === "admin" ? readAll("control_profiles") : Promise.resolve([]),
   ]);
+  await loadAvatars(actor, users);
   const names = new Map(users.map((u) => [u.id, u.name]));
   return {
     actor,
