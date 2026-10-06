@@ -11,8 +11,8 @@ import {
   payments,
   rowActions,
   pageError,
-} from "./ui.js?v=20261002-control-v7";
-import { setupMovementForm } from "./movimiento-form.js?v=20261002-control-v7";
+} from "./ui.js?v=20261005-periodos-v8";
+import { setupMovementForm } from "./movimiento-form.js?v=20261005-periodos-v8";
 import { evidenceButton } from "./evidence.js?v=20261002-control-v7";
 import {
   money,
@@ -21,7 +21,7 @@ import {
   isDate,
   periodRange,
   reconcile,
-} from "./finanzas.js?v=20261002-control-v7";
+} from "./finanzas.js?v=20261005-periodos-v8";
 let ctx,
   report = null,
   range,

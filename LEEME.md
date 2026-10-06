@@ -45,7 +45,11 @@ Ejecuta `database/03_usuarios_fotos_y_marca.sql` y publica la Edge Function `con
 
 Ejecuta completo `database/04_responsables_estados_y_evidencias.sql`. Registra los responsables desde la sesión y crea el depósito privado de evidencias. Para actualizar una instalación existente, sigue **[ACTUALIZACION_RESPONSABLES_ESTADOS_Y_EVIDENCIAS.md](ACTUALIZACION_RESPONSABLES_ESTADOS_Y_EVIDENCIAS.md)**.
 
-### 6. Abre la aplicación
+### 6. Activa periodos bimestrales y anuales
+
+Ejecuta `database/05_periodos_gastos.sql` después de la migración 04. Consulta [ACTUALIZACION_PERIODOS_GASTOS.md](ACTUALIZACION_PERIODOS_GASTOS.md) para actualizar una instalación existente.
+
+### 7. Abre la aplicación
 
 1. Descomprime el ZIP completo y abre su carpeta en Visual Studio Code.
 2. Con una extensión de servidor estático como **Live Server**, abre `login.html`.

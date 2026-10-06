@@ -174,7 +174,9 @@
                   <option value="todos">Todas las periodicidades</option>
                   <option value="semanal">Semanal</option>
                   <option value="quincenal">Quincenal</option>
-                  <option value="mensual">Mensual</option></select
+                  <option value="mensual">Mensual</option>
+                  <option value="bimestral">Bimestral</option>
+                  <option value="anual">Anual</option></select
                 ><select
                   class="form-select filter-select"
                   id="expense-status"
@@ -220,7 +222,9 @@
                   >
                     <option value="semana">Semana</option>
                     <option value="quincena">Quincena</option>
-                    <option value="mes" selected>Mes</option></select
+                    <option value="mes" selected>Mes</option>
+                    <option value="bimestre">Bimestre</option>
+                    <option value="anio">Año</option></select
                   ><input
                     class="form-control"
                     type="date"
@@ -402,6 +406,8 @@
                   <option value="semanal">Semanal</option>
                   <option value="quincenal">Quincenal</option>
                   <option value="mensual">Mensual</option>
+                  <option value="bimestral">Bimestral</option>
+                  <option value="anual">Anual</option>
                 </select>
               </div>
             </div>
@@ -409,7 +415,17 @@
               <div class="form-field">
                 <label class="form-label" for="expense-startDate"
                   >Fecha de inicio</label
-                ><input
+                >
+                <button
+                  type="button"
+                  class="btn btn-sm p-0 ms-1"
+                  data-bs-toggle="tooltip"
+                  title="Desde esta fecha se generan los vencimientos. No es la fecha límite de pago: esa se define con el día y el mes de pago."
+                  aria-label="Ayuda sobre la fecha de inicio"
+                >
+                  <i class="bi bi-info-circle" aria-hidden="true"></i>
+                </button>
+                <input
                   class="form-control"
                   id="expense-startDate"
                   name="startDate"
@@ -431,6 +447,51 @@
                 <div class="form-text">
                   Los periodos anteriores conservan su costo.
                 </div>
+              </div>
+            </div>
+            <p class="form-text mb-3">
+              El inicio activa la programación; el día de pago define cuándo
+              vence cada gasto.
+            </p>
+            <div class="mb-2">
+              <strong class="small">Fecha límite de pago</strong>
+              <button
+                type="button"
+                class="btn btn-sm p-0 ms-1"
+                data-bs-toggle="tooltip"
+                title="Cada vencimiento es la fecha límite para cubrir ese pago. Si pasa y queda saldo por pagar, aparece como Vencido. No es una fecha de cierre del gasto."
+                aria-label="Ayuda sobre la fecha límite de pago"
+              >
+                <i class="bi bi-info-circle" aria-hidden="true"></i>
+              </button>
+            </div>
+            <div id="cycle-fields" hidden>
+              <div class="form-field">
+                <label
+                  class="form-label"
+                  for="expense-cycleMonth"
+                  id="cycle-month-label"
+                  >Mes de pago</label
+                >
+                <select
+                  class="form-select"
+                  id="expense-cycleMonth"
+                  name="cycleMonth"
+                >
+                  <option value="1">Enero</option>
+                  <option value="2">Febrero</option>
+                  <option value="3">Marzo</option>
+                  <option value="4">Abril</option>
+                  <option value="5">Mayo</option>
+                  <option value="6">Junio</option>
+                  <option value="7">Julio</option>
+                  <option value="8">Agosto</option>
+                  <option value="9">Septiembre</option>
+                  <option value="10">Octubre</option>
+                  <option value="11">Noviembre</option>
+                  <option value="12">Diciembre</option>
+                </select>
+                <div class="form-text" id="cycle-month-help"></div>
               </div>
             </div>
             <div id="weekly-fields">
@@ -727,7 +788,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script
       type="module"
-      src="assets/js/gastos-fijos.js?v=20261002-control-v7"
+      src="assets/js/gastos-fijos.js?v=20261005-periodos-v8"
     ></script>
   </body>
 </html>

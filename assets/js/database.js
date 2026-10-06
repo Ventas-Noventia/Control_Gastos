@@ -74,6 +74,7 @@ export async function loadState() {
       frequency: s.frequency,
       weekDay: s.week_day,
       monthDay: s.month_day,
+      cycleMonth: s.cycle_month,
       halfDay1: s.half_day1,
       halfDay2: s.half_day2,
       active: s.active ? 1 : 0,

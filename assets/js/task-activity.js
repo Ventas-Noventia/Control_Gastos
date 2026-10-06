@@ -1,6 +1,6 @@
-import { loadTaskActivity } from "./database.js?v=20261002-control-v7";
-import { esc } from "./ui.js?v=20261002-control-v7";
-import { money, dateLabel } from "./finanzas.js?v=20261002-control-v7";
+import { loadTaskActivity } from "./database.js?v=20261005-periodos-v8";
+import { esc } from "./ui.js?v=20261005-periodos-v8";
+import { money, dateLabel } from "./finanzas.js?v=20261005-periodos-v8";
 import { evidenceButton } from "./evidence.js?v=20261002-control-v7";
 
 const unknown = "Sin registro previo";

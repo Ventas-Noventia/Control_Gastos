@@ -19,8 +19,8 @@ import {
   assertAdmin,
   setCategory,
   readCategory,
-} from "./ui.js?v=20261002-control-v7";
-import { saveExpense } from "./database.js?v=20261002-control-v7";
+} from "./ui.js?v=20261005-periodos-v8";
+import { saveExpense } from "./database.js?v=20261005-periodos-v8";
 import {
   evidenceForm,
   evidenceButton,
@@ -32,7 +32,7 @@ import {
   periodRange,
   obligations,
   scheduleAt,
-} from "./finanzas.js?v=20261002-control-v7";
+} from "./finanzas.js?v=20261005-periodos-v8";
 const weekdays = [
   "Domingo",
   "Lunes",
@@ -42,6 +42,29 @@ const weekdays = [
   "Viernes",
   "Sábado",
 ];
+const months = [
+  "Enero",
+  "Febrero",
+  "Marzo",
+  "Abril",
+  "Mayo",
+  "Junio",
+  "Julio",
+  "Agosto",
+  "Septiembre",
+  "Octubre",
+  "Noviembre",
+  "Diciembre",
+];
+function scheduleLabel(s) {
+  if (s.frequency === "semanal") return weekdays[s.weekDay];
+  if (s.frequency === "quincenal") return `Días ${s.halfDay1} y ${s.halfDay2}`;
+  if (s.frequency === "anual")
+    return `Día ${s.monthDay} de ${months[s.cycleMonth - 1]}, cada año`;
+  if (s.frequency === "bimestral")
+    return `Día ${s.monthDay}, cada 2 meses desde ${months[s.cycleMonth - 1]}`;
+  return `Día ${s.monthDay} de cada mes`;
+}
 let ctx,
   filtered = [],
   dueMap = new Map(),
@@ -132,7 +155,7 @@ function render() {
             .filter((v) => v.expenseId === e.id && v.effectiveDate > today())
             .sort((a, b) => a.effectiveDate.localeCompare(b.effectiveDate))[0];
           const ownDues = dues.filter((o) => o.sourceId === e.id);
-          return `<tr><td><div class="item-title"><span class="category-icon">${icon("arrow-repeat")}</span><div><strong>${esc(e.title)}</strong><small>${esc(e.category)}</small><span class="expense-mobile-status">${badge(expenseStatus(e))}</span>${evidenceButton(e.evidencePath)}</div></div></td><td><span class="status-badge purple text-capitalize">${esc(s.frequency)}</span><small class="cell-small">${s.frequency === "semanal" ? weekdays[s.weekDay] : s.frequency === "quincenal" ? `Días ${s.halfDay1} y ${s.halfDay2}` : `Día ${s.monthDay} de cada mes`}</small></td><td class="money-cell"><strong>${money(s.amountCents)}</strong>${future ? `<small>Cambio desde ${dateLabel(future.effectiveDate)}</small>` : ""}</td><td>${badge(s.effectiveDate > today() ? "Programado" : s.active ? "Activo" : "Pausado")}</td><td>${badge(expenseStatus(e))}${ownDues.length ? `<small class="cell-small">${ownDues.filter((o) => o.remainingCents === 0).length} de ${ownDues.length} vencimientos pagados</small>` : ""}</td><td>${ctx.admin ? rowActions("expenses", e) : "—"}</td></tr>`;
+          return `<tr><td><div class="item-title"><span class="category-icon">${icon("arrow-repeat")}</span><div><strong>${esc(e.title)}</strong><small>${esc(e.category)}</small><span class="expense-mobile-status">${badge(expenseStatus(e))}</span>${evidenceButton(e.evidencePath)}</div></div></td><td><span class="status-badge purple text-capitalize">${esc(s.frequency)}</span><small class="cell-small">${esc(scheduleLabel(s))}</small></td><td class="money-cell"><strong>${money(s.amountCents)}</strong>${future ? `<small>Cambio desde ${dateLabel(future.effectiveDate)}</small>` : ""}</td><td>${badge(s.effectiveDate > today() ? "Programado" : s.active ? "Activo" : "Pausado")}</td><td>${badge(expenseStatus(e))}${ownDues.length ? `<small class="cell-small">${ownDues.filter((o) => o.remainingCents === 0).length} de ${ownDues.length} vencimientos pagados</small>` : ""}</td><td>${ctx.admin ? rowActions("expenses", e) : "—"}</td></tr>`;
         })
         .join("")
     : emptyRow(
@@ -159,7 +182,19 @@ function render() {
 function adjustFields() {
   const f = form.elements.frequency.value;
   $("#weekly-fields").hidden = f !== "semanal";
-  $("#monthly-fields").hidden = f !== "mensual";
+  $("#monthly-fields").hidden = !["mensual", "bimestral", "anual"].includes(f);
+  const cycle = ["bimestral", "anual"].includes(f);
+  $("#cycle-fields").hidden = !cycle;
+  form.elements.cycleMonth.required = cycle;
+  $("#cycle-month-label").textContent =
+    f === "anual" ? "Mes de pago anual" : "Mes de referencia del ciclo";
+  $("#cycle-month-help").textContent =
+    f === "anual"
+      ? "Un pago cada año en este mes, a partir de la fecha de inicio."
+      : "Un pago cada dos meses: enero genera enero, marzo, mayo…; febrero genera febrero, abril, junio… A partir de la fecha de inicio.";
+  form.elements.monthDay.required = !$("#monthly-fields").hidden;
+  form.elements.halfDay1.required = form.elements.halfDay2.required =
+    f === "quincenal";
   $("#half-fields").hidden = f !== "quincenal";
 }
 function edit(expense) {
@@ -182,6 +217,7 @@ function edit(expense) {
     effectiveDate: s?.effectiveDate > today() ? s.effectiveDate : today(),
     weekDay: s?.weekDay ?? 1,
     monthDay: s?.monthDay ?? 1,
+    cycleMonth: s?.cycleMonth ?? Number(today().slice(5, 7)),
     halfDay1: s?.halfDay1 ?? 1,
     halfDay2: s?.halfDay2 ?? 16,
   };
@@ -200,6 +236,18 @@ function edit(expense) {
 try {
   ctx = await initPage("gastos-fijos", "Gastos fijos");
   $("#anchor").value = today();
+  const tooltips = [
+    ...document.querySelectorAll('[data-bs-toggle="tooltip"]'),
+  ].map(
+    (el) =>
+      new bootstrap.Tooltip(el, {
+        trigger: "hover focus",
+        container: "#expense-modal",
+      }),
+  );
+  $("#expense-modal").addEventListener("hide.bs.modal", () =>
+    tooltips.forEach((tooltip) => tooltip.hide()),
+  );
   const openPayment = payments(ctx, render);
   render();
   setupDeletion(ctx, render);
@@ -246,6 +294,7 @@ try {
           effectiveDate: f.effectiveDate.value,
           weekDay: Number(f.weekDay.value),
           monthDay: Number(f.monthDay.value),
+          cycleMonth: Number(f.cycleMonth.value),
           halfDay1: Number(f.halfDay1.value),
           halfDay2: Number(f.halfDay2.value),
           active: f.active.checked,
@@ -263,6 +312,7 @@ try {
         "Concepto",
         "Categoría",
         "Periodicidad",
+        "Calendario de pago",
         "Importe vigente MXN",
         "Desde",
         "Activo",
@@ -275,6 +325,7 @@ try {
           e.title,
           e.category,
           s.frequency,
+          scheduleLabel(s),
           s.amountCents / 100,
           e.startDate,
           s.active ? "Sí" : "No",

@@ -12,7 +12,7 @@ import {
   pageError,
   assertAdmin,
   emptyRow,
-} from "./ui.js?v=20261002-control-v7";
+} from "./ui.js?v=20261005-periodos-v8";
 import {
   adminAction,
   validateImage,

@@ -71,6 +71,16 @@ export function periodRange(type, anchor) {
       from: `${prefix}-${day <= 15 ? "01" : "16"}`,
       to: `${prefix}-${day <= 15 ? "15" : String(last)}`,
     };
+  if (type === "bimestre") {
+    const firstMonth = month - ((month - 1) % 2);
+    const finalMonth = firstMonth + 1;
+    const finalDay = new Date(Date.UTC(year, finalMonth, 0)).getUTCDate();
+    return {
+      from: `${year}-${String(firstMonth).padStart(2, "0")}-01`,
+      to: `${year}-${String(finalMonth).padStart(2, "0")}-${finalDay}`,
+    };
+  }
+  if (type === "anio") return { from: `${year}-01-01`, to: `${year}-12-31` };
   return { from: `${prefix}-01`, to: `${prefix}-${last}` };
 }
 export function scheduleAt(schedules, expenseId, date) {
@@ -147,7 +157,12 @@ export function obligations(state, from, to) {
             ? dt.getUTCDay() === s.weekDay
             : s.frequency === "quincenal"
               ? day === s.halfDay1 || day === Math.min(s.halfDay2, last)
-              : day === Math.min(s.monthDay, last);
+              : day === Math.min(s.monthDay, last) &&
+                (s.frequency === "mensual" ||
+                  (s.frequency === "bimestral" &&
+                    (dt.getUTCMonth() + 1 - s.cycleMonth) % 2 === 0) ||
+                  (s.frequency === "anual" &&
+                    dt.getUTCMonth() + 1 === s.cycleMonth));
         if (due)
           push({
             key: `fijo:${e.id}:${d}`,

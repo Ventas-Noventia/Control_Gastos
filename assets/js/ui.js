@@ -1,5 +1,5 @@
 import { requireProfile, signOut } from "./auth.js?v=20261002-control-v7";
-import { loadState } from "./database.js?v=20261002-control-v7";
+import { loadState } from "./database.js?v=20261005-periodos-v8";
 import { loadBrand } from "./branding.js?v=20261002-control-v7";
 import { getModal } from "./modal-controller.js?v=20261002-control-v7";
 import {
@@ -11,7 +11,7 @@ import {
   today,
   dateLabel,
   money,
-} from "./finanzas.js?v=20261002-control-v7";
+} from "./finanzas.js?v=20261005-periodos-v8";
 export const $ = (selector) => document.querySelector(selector);
 export const esc = (value) =>
   String(value ?? "").replace(
@@ -375,7 +375,7 @@ export function setupDeletion(ctx, onReload) {
     if (!pending || deleting) return;
     deleting = true;
     const { deleteRecord } =
-      await import("./database.js?v=20261002-control-v7");
+      await import("./database.js?v=20261005-periodos-v8");
     const ok = await submitForm(form, async () => {
       await deleteRecord(pending.table, pending.id);
       await reloadAfterSave(ctx);
@@ -396,7 +396,7 @@ export function payments(ctx, onReload) {
     e.preventDefault();
     if (!obligation) return;
     const { saveMovement } =
-      await import("./database.js?v=20261002-control-v7");
+      await import("./database.js?v=20261005-periodos-v8");
     const ok = await submitForm(form, async () => {
       await evidence.save((evidencePath) =>
         saveMovement({

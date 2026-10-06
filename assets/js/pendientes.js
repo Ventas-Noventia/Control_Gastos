@@ -21,23 +21,23 @@ import {
   setCategory,
   readCategory,
   availableCategories,
-} from "./ui.js?v=20261002-control-v7";
+} from "./ui.js?v=20261005-periodos-v8";
 import {
   saveTask,
   taskAuditAvailable,
-} from "./database.js?v=20261002-control-v7";
+} from "./database.js?v=20261005-periodos-v8";
 import {
   responsibleSummary,
   responsibleDetail,
   responsibleExport,
   showTaskActivity,
-} from "./task-activity.js?v=20261002-control-v7";
+} from "./task-activity.js?v=20261005-periodos-v8";
 import {
   money,
   today,
   dateLabel,
   obligations,
-} from "./finanzas.js?v=20261002-control-v7";
+} from "./finanzas.js?v=20261005-periodos-v8";
 let ctx,
   tab = "activos",
   filtered = [],

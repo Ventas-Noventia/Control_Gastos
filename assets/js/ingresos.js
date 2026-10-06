@@ -9,14 +9,14 @@ import {
   setupDeletion,
   rowActions,
   pageError,
-} from "./ui.js?v=20261002-control-v7";
-import { setupMovementForm } from "./movimiento-form.js?v=20261002-control-v7";
+} from "./ui.js?v=20261005-periodos-v8";
+import { setupMovementForm } from "./movimiento-form.js?v=20261005-periodos-v8";
 import {
   money,
   today,
   dateLabel,
   periodRange,
-} from "./finanzas.js?v=20261002-control-v7";
+} from "./finanzas.js?v=20261005-periodos-v8";
 let ctx,
   filtered = [];
 const month = periodRange("mes", today());
