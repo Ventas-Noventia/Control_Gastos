@@ -8,9 +8,9 @@ import {
   assertAdmin,
   setCategory,
   readCategory,
-} from "./ui.js?v=20261002-noventia-v6";
-import { saveMovement } from "./database.js?v=20261002-noventia-v6";
-import { today } from "./finanzas.js?v=20261002-noventia-v6";
+} from "./ui.js?v=20261002-control-v7";
+import { saveMovement } from "./database.js?v=20261002-control-v7";
+import { today } from "./finanzas.js?v=20261002-control-v7";
 export function setupMovementForm(ctx, onReload, opening = false) {
   const prefix = opening ? "opening" : "income",
     form = $("#" + prefix + "-form");

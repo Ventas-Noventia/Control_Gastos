@@ -1,4 +1,4 @@
-import { getClient } from "./supabase-client.js?v=20261002-noventia-v6";
+import { getClient } from "./supabase-client.js?v=20261002-control-v7";
 const safePages = [
   "pendientes.html",
   "gastos-fijos.html",

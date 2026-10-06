@@ -41,7 +41,11 @@ El registro público no forma parte de este sistema. Desactiva las altas públic
 
 Ejecuta `database/03_usuarios_fotos_y_marca.sql` y publica la Edge Function `control-admin` siguiendo los pasos 2 y 3 de **[ACTUALIZACION_USUARIOS_Y_MARCA.md](ACTUALIZACION_USUARIOS_Y_MARCA.md)**. Es código JavaScript que se ejecuta en Supabase; permite administrar cuentas y contraseñas sin poner claves privadas en el navegador.
 
-### 5. Abre la aplicación
+### 5. Activa responsables y evidencias
+
+Ejecuta completo `database/04_responsables_estados_y_evidencias.sql`. Registra los responsables desde la sesión y crea el depósito privado de evidencias. Para actualizar una instalación existente, sigue **[ACTUALIZACION_RESPONSABLES_ESTADOS_Y_EVIDENCIAS.md](ACTUALIZACION_RESPONSABLES_ESTADOS_Y_EVIDENCIAS.md)**.
+
+### 6. Abre la aplicación
 
 1. Descomprime el ZIP completo y abre su carpeta en Visual Studio Code.
 2. Con una extensión de servidor estático como **Live Server**, abre `login.html`.
@@ -75,6 +79,8 @@ Para agregar a otra persona, entra a **Usuarios → Nuevo usuario**. Escribe nom
 Usa el lápiz para editar nombre, correo, foto, rol, acceso o contraseña. Al editar, deja la contraseña vacía para conservarla; la anterior nunca se muestra. La papelera elimina la cuenta después de confirmar y conserva sus movimientos financieros. Tu propia cuenta puede editar sus datos, pero conserva el acceso de administrador y no puede eliminarse desde aquí.
 
 El logo original de Noventia ya viene incluido. En **Marca** puedes reemplazarlo, restaurarlo y cambiar el nombre de la empresa. Se muestran en el login y en el encabezado de todas las páginas. El menú de usuarios y marca es exclusivo de admin.
+
+Pendientes muestra quién creó el registro y quién lo finalizó. Su detalle incluye la última modificación y un historial de actividad con el usuario y la hora de cada operación. Estos datos se generan desde la sesión en la base de datos. Los nombres históricos se conservan al editar o eliminar cuentas; los registros anteriores a la actualización muestran **Sin registro previo** donde no se conoce al responsable.
 
 ## Módulos
 
@@ -113,6 +119,10 @@ Al editar un gasto fijo, el costo, la periodicidad y la pausa se guardan con vig
 
 Eliminar un pendiente o un gasto lo retira del catálogo activo. Sus pagos realizados permanecen en el cuadre. Eliminar un ingreso o un pago recalcula los saldos.
 
+En Gastos fijos, cada vencimiento muestra **A tiempo**, **Vencido**, **Pago parcial** o **Pagado**. Un abono incompleto después del vencimiento sigue apareciendo como vencido. El catálogo separa la programación del gasto y el estado de sus vencimientos en el periodo consultado. Puedes filtrar ese estado y editar o eliminar el último pago directamente desde sus vencimientos; Cuadre permite revisar todos los pagos.
+
+Al crear o editar un gasto o un pago puedes adjuntar una evidencia opcional en PNG, JPG, WEBP o PDF, de hasta 5 MB. Se guarda de forma privada y se abre desde **Ver evidencia**. Una evidencia por sí sola no registra dinero ni cambia el estado. El CSV indica su existencia sin exportar enlaces privados.
+
 Un pendiente con importe mayor que cero se completa al cubrirlo con pagos. Para una tarea sin costo, usa importe 0 y cambia el estado a Completado.
 
 ## Exportación
@@ -125,6 +135,8 @@ Un pendiente con importe mayor que cero se completa al cubrirlo con pagos. Para 
 Cada página carga su módulo en `assets/js/`. El CSS común está en `assets/css/styles.css`. Los módulos `auth.js`, `database.js`, `ui.js` y `finanzas.js` comparten autenticación, acceso a datos, controles y cálculos. La conexión editable vive en `config.js`. El código JavaScript de la función protegida está separado en `supabase/functions/control-admin/`. La migración 03 agrega las fotos y la marca sin borrar los datos existentes.
 
 No hay React, TypeScript ni archivos de compilación. El frontend no necesita instalar paquetes; para publicar la función de usuarios se usa el CLI de Supabase. Bootstrap 5.3.8, Bootstrap Icons 1.13.1 y Supabase JS 2 se cargan desde CDN.
+
+Los módulos `task-activity.js` y `evidence.js` separan la actividad de pendientes y los comprobantes del resto de las páginas. El SQL 04 agrega sus datos y permisos sin borrar información anterior.
 
 ## Comprobaciones realizadas
 

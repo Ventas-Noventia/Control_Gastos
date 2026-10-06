@@ -21,14 +21,23 @@ import {
   setCategory,
   readCategory,
   availableCategories,
-} from "./ui.js?v=20261002-noventia-v6";
-import { saveTask } from "./database.js?v=20261002-noventia-v6";
+} from "./ui.js?v=20261002-control-v7";
+import {
+  saveTask,
+  taskAuditAvailable,
+} from "./database.js?v=20261002-control-v7";
+import {
+  responsibleSummary,
+  responsibleDetail,
+  responsibleExport,
+  showTaskActivity,
+} from "./task-activity.js?v=20261002-control-v7";
 import {
   money,
   today,
   dateLabel,
   obligations,
-} from "./finanzas.js?v=20261002-noventia-v6";
+} from "./finanzas.js?v=20261002-control-v7";
 let ctx,
   tab = "activos",
   filtered = [],
@@ -94,7 +103,19 @@ function render() {
         (tab === "todos" ||
           (tab === "completados" ? completed(t) : !completed(t))) &&
         (category === "todos" || t.category === category) &&
-        (t.title + " " + t.category + " " + t.description)
+        (
+          t.title +
+          " " +
+          t.category +
+          " " +
+          t.description +
+          " " +
+          (t.createdByName || "") +
+          " " +
+          (t.updatedByName || "") +
+          " " +
+          (t.completedByName || "")
+        )
           .toLowerCase()
           .includes(query),
     )
@@ -110,11 +131,11 @@ function render() {
               : t.status === "en_proceso" && o.status !== "Vencido"
                 ? "En proceso"
                 : o.status;
-          return `<tr><td><div class="item-title"><span class="category-icon">${icon(t.category === "Tecnología" ? "laptop" : t.category === "Despensa" ? "basket" : "clipboard-check")}</span><div><button class="title-button" data-detail="${esc(t.id)}">${esc(t.title)}</button><small>${esc(t.category)}${urls.length ? ` · ${urls.length} opciones` : ""}</small></div></div></td><td class="${t.dueDate < today() && !completed(t) ? "overdue" : ""}">${dateLabel(t.dueDate)}</td><td><span class="priority priority-${esc(t.priority)}">${icon("flag")}${{ alta: "Alta", media: "Media", baja: "Baja" }[t.priority]}</span></td><td class="money-cell"><strong>${money(t.amountCents)}</strong><small>${money(o.remainingCents)} por cubrir</small></td><td>${badge(status)}</td><td>${ctx.admin ? rowActions("tasks", t, o.remainingCents > 0 ? `<button class="btn btn-sm btn-soft" data-pay="${esc(t.id)}">Pagar</button>` : "") : `<button class="btn btn-sm btn-outline-secondary" data-detail="${esc(t.id)}">Ver</button>`}</td></tr>`;
+          return `<tr><td><div class="item-title"><span class="category-icon">${icon(t.category === "Tecnología" ? "laptop" : t.category === "Despensa" ? "basket" : "clipboard-check")}</span><div><button class="title-button" data-detail="${esc(t.id)}">${esc(t.title)}</button><small>${esc(t.category)}${urls.length ? ` · ${urls.length} opciones` : ""}</small><div class="mobile-task-responsibles">${responsibleSummary(t, completed(t))}</div></div></div></td><td class="${t.dueDate < today() && !completed(t) ? "overdue" : ""}">${dateLabel(t.dueDate)}</td><td><span class="priority priority-${esc(t.priority)}">${icon("flag")}${{ alta: "Alta", media: "Media", baja: "Baja" }[t.priority]}</span></td><td class="money-cell"><strong>${money(t.amountCents)}</strong><small>${money(o.remainingCents)} por cubrir</small></td><td>${badge(status)}</td><td>${responsibleSummary(t, completed(t))}</td><td>${ctx.admin ? rowActions("tasks", t, o.remainingCents > 0 ? `<button class="btn btn-sm btn-soft" data-pay="${esc(t.id)}">Pagar</button>` : "") : `<button class="btn btn-sm btn-outline-secondary" data-detail="${esc(t.id)}">Ver</button>`}</td></tr>`;
         })
         .join("")
     : emptyRow(
-        6,
+        7,
         tasks.length ? "Sin coincidencias" : "Tu lista comienza aquí",
         "Agrega una compra o compromiso, define su fecha y compara hasta tres opciones.",
         tasks.length
@@ -157,11 +178,13 @@ function detail(task) {
   $("#detail-modal-title").textContent = task.title;
   const urls = JSON.parse(task.linksJson);
   $("#task-detail").innerHTML =
-    `<div class="detail-grid"><div><span>Importe estimado</span><strong>${money(task.amountCents)}</strong></div><div><span>Fecha límite</span><strong>${dateLabel(task.dueDate)}</strong></div></div><p class="detail-notes">${esc(task.description || "Sin notas adicionales.")}</p><h3>Opciones de compra</h3><div class="purchase-links">${urls.length ? urls.map((url, i) => `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${icon("link-45deg")}Opción ${i + 1}${icon("box-arrow-up-right")}</a>`).join("") : '<p class="muted">No se agregaron enlaces.</p>'}</div>`;
+    `<div class="detail-grid"><div><span>Importe estimado</span><strong>${money(task.amountCents)}</strong></div><div><span>Fecha límite</span><strong>${dateLabel(task.dueDate)}</strong></div></div><p class="detail-notes">${esc(task.description || "Sin notas adicionales.")}</p><h3>Opciones de compra</h3><div class="purchase-links">${urls.length ? urls.map((url, i) => `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${icon("link-45deg")}Opción ${i + 1}${icon("box-arrow-up-right")}</a>`).join("") : '<p class="muted">No se agregaron enlaces.</p>'}</div>${responsibleDetail(task, completed(task))}<section class="task-detail-section" id="task-activity"></section>`;
+  showTaskActivity($("#task-activity"), task.id);
   modal("detail-modal").show();
 }
 try {
   ctx = await initPage("pendientes", "Pendientes");
+  $("#task-audit-notice").hidden = !ctx.admin || (await taskAuditAvailable());
   const openPayment = payments(ctx, render);
   render();
   setupDeletion(ctx, render);
@@ -236,6 +259,12 @@ try {
         "Enlace 1",
         "Enlace 2",
         "Enlace 3",
+        "Creado por",
+        "Fecha de creación CDMX",
+        "Última modificación por",
+        "Fecha de modificación CDMX",
+        "Finalizado por",
+        "Fecha de finalización CDMX",
       ],
       ...filtered.map((t) => {
         const o = byId.get(t.id);
@@ -248,7 +277,11 @@ try {
           t.amountCents / 100,
           o.paidCents / 100,
           o.remainingCents / 100,
-          ...JSON.parse(t.linksJson),
+          ...Array.from(
+            { length: 3 },
+            (_, i) => JSON.parse(t.linksJson)[i] || "",
+          ),
+          ...responsibleExport(t, completed(t)),
         ];
       }),
     ]),

@@ -1,4 +1,4 @@
-import { getClient } from "./supabase-client.js?v=20261002-noventia-v6";
+import { getClient } from "./supabase-client.js?v=20261002-control-v7";
 
 export const DEFAULT_LOGO = new URL("../img/noventia-logo.png", import.meta.url)
   .href;

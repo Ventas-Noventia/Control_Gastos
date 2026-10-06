@@ -1,12 +1,17 @@
-import { requireProfile, signOut } from "./auth.js?v=20261002-noventia-v6";
-import { loadState } from "./database.js?v=20261002-noventia-v6";
-import { loadBrand } from "./branding.js?v=20261002-noventia-v6";
+import { requireProfile, signOut } from "./auth.js?v=20261002-control-v7";
+import { loadState } from "./database.js?v=20261002-control-v7";
+import { loadBrand } from "./branding.js?v=20261002-control-v7";
+import { getModal } from "./modal-controller.js?v=20261002-control-v7";
+import {
+  evidenceForm,
+  setupEvidenceViewer,
+} from "./evidence.js?v=20261002-control-v7";
 import {
   categories,
   today,
   dateLabel,
   money,
-} from "./finanzas.js?v=20261002-noventia-v6";
+} from "./finanzas.js?v=20261002-control-v7";
 export const $ = (selector) => document.querySelector(selector);
 export const esc = (value) =>
   String(value ?? "").replace(
@@ -23,7 +28,7 @@ export function badge(status) {
     ? "success"
     : status === "Vencido"
       ? "danger"
-      : status === "Pago parcial"
+      : ["Pago parcial", "A tiempo"].includes(status)
         ? "purple"
         : "muted";
   return `<span class="status-badge ${cls}">${esc(status)}</span>`;
@@ -64,7 +69,7 @@ export function setStats(items) {
 }
 export function modal(id) {
   const node = document.getElementById(id);
-  return bootstrap.Modal.getOrCreateInstance(node);
+  return getModal(node);
 }
 export function clearFormError(form) {
   const node = form.querySelector(".form-error");
@@ -231,6 +236,7 @@ function setupNavigation() {
   });
 }
 export async function initPage(page, title, adminOnly = false) {
+  setupEvidenceViewer();
   setupNavigation();
   await loadBrand();
   const profile = await requireProfile(adminOnly);
@@ -368,7 +374,8 @@ export function setupDeletion(ctx, onReload) {
     e.preventDefault();
     if (!pending || deleting) return;
     deleting = true;
-    const { deleteRecord } = await import("./database.js");
+    const { deleteRecord } =
+      await import("./database.js?v=20261002-control-v7");
     const ok = await submitForm(form, async () => {
       await deleteRecord(pending.table, pending.id);
       await reloadAfterSave(ctx);
@@ -383,24 +390,29 @@ export function rowActions(table, item, extra = "") {
 }
 export function payments(ctx, onReload) {
   const form = $("#payment-form");
+  const evidence = evidenceForm(form);
   let obligation, movement;
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!obligation) return;
-    const { saveMovement } = await import("./database.js");
+    const { saveMovement } =
+      await import("./database.js?v=20261002-control-v7");
     const ok = await submitForm(form, async () => {
-      await saveMovement({
-        id: form.elements.id.value,
-        kind: "egreso",
-        title: obligation.title,
-        category: obligation.category,
-        amountCents: cents(form.elements.amount.value),
-        date: form.elements.date.value,
-        note: form.elements.note.value,
-        sourceType: obligation.sourceType,
-        sourceId: obligation.sourceId,
-        dueDate: obligation.sourceType === "fijo" ? obligation.dueDate : null,
-      });
+      await evidence.save((evidencePath) =>
+        saveMovement({
+          id: form.elements.id.value,
+          kind: "egreso",
+          title: obligation.title,
+          category: obligation.category,
+          amountCents: cents(form.elements.amount.value),
+          date: form.elements.date.value,
+          note: form.elements.note.value,
+          sourceType: obligation.sourceType,
+          sourceId: obligation.sourceId,
+          dueDate: obligation.sourceType === "fijo" ? obligation.dueDate : null,
+          evidencePath,
+        }),
+      );
       await reloadAfterSave(ctx);
       onReload();
     });
@@ -410,6 +422,7 @@ export function payments(ctx, onReload) {
     obligation = o;
     movement = m;
     form.reset();
+    evidence.reset(m?.evidencePath);
     clearFormError(form);
     form.elements.id.value = m?.id ?? crypto.randomUUID();
     form.elements.amount.value = (m?.amountCents ?? o.remainingCents) / 100;

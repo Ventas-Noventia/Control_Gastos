@@ -2,9 +2,9 @@ import {
   currentProfile,
   signIn,
   nextPage,
-} from "./auth.js?v=20261002-noventia-v6";
-import { getClient } from "./supabase-client.js?v=20261002-noventia-v6";
-import { loadBrand } from "./branding.js?v=20261002-noventia-v6";
+} from "./auth.js?v=20261002-control-v7";
+import { getClient } from "./supabase-client.js?v=20261002-control-v7";
+import { loadBrand } from "./branding.js?v=20261002-control-v7";
 const form = document.getElementById("login-form"),
   errorBox = document.getElementById("login-error");
 function showError(message) {

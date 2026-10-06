@@ -11,8 +11,9 @@ import {
   payments,
   rowActions,
   pageError,
-} from "./ui.js?v=20261002-noventia-v6";
-import { setupMovementForm } from "./movimiento-form.js?v=20261002-noventia-v6";
+} from "./ui.js?v=20261002-control-v7";
+import { setupMovementForm } from "./movimiento-form.js?v=20261002-control-v7";
+import { evidenceButton } from "./evidence.js?v=20261002-control-v7";
 import {
   money,
   today,
@@ -20,7 +21,7 @@ import {
   isDate,
   periodRange,
   reconcile,
-} from "./finanzas.js?v=20261002-noventia-v6";
+} from "./finanzas.js?v=20261002-control-v7";
 let ctx,
   report = null,
   range,
@@ -85,7 +86,7 @@ function render() {
     ? report.movements
         .map(
           (m) =>
-            `<tr><td><strong>${esc(m.title)}</strong><small class="cell-small">${esc(m.category)}</small>${m.note ? `<small class="cell-small table-notes">${esc(m.note)}</small>` : ""}</td><td>${dateLabel(m.date)}</td><td><span class="status-badge muted">${m.kind === "saldo_inicial" ? "Apertura" : m.sourceType === "pendiente" ? "Pendiente" : m.sourceType === "fijo" ? "Gasto fijo" : "Ingreso"}</span></td><td><span class="income-amount">${m.kind !== "egreso" ? money(m.amountCents) : "—"}</span></td><td><span class="expense-amount">${m.kind === "egreso" ? money(m.amountCents) : "—"}</span></td><td>${ctx.admin ? (m.kind === "saldo_inicial" ? `<button class="btn icon-button" data-edit="${esc(m.id)}" title="Editar saldo" aria-label="Editar saldo inicial">${icon("pencil")}</button>` : rowActions("movements", m)) : "—"}</td></tr>`,
+            `<tr><td><strong>${esc(m.title)}</strong><small class="cell-small">${esc(m.category)}</small>${m.note ? `<small class="cell-small table-notes">${esc(m.note)}</small>` : ""}${evidenceButton(m.evidencePath)}</td><td>${dateLabel(m.date)}</td><td><span class="status-badge muted">${m.kind === "saldo_inicial" ? "Apertura" : m.sourceType === "pendiente" ? "Pendiente" : m.sourceType === "fijo" ? "Gasto fijo" : "Ingreso"}</span></td><td><span class="income-amount">${m.kind !== "egreso" ? money(m.amountCents) : "—"}</span></td><td><span class="expense-amount">${m.kind === "egreso" ? money(m.amountCents) : "—"}</span></td><td>${ctx.admin ? (m.kind === "saldo_inicial" ? `<button class="btn icon-button" data-edit="${esc(m.id)}" title="Editar saldo" aria-label="Editar saldo inicial">${icon("pencil")}</button>` : rowActions("movements", m)) : "—"}</td></tr>`,
         )
         .join("")
     : emptyRow(
@@ -141,6 +142,7 @@ function exportReport() {
       "Salida MXN",
       "Notas",
       "Registrado por",
+      "Evidencia",
     ],
     ...report.movements.map((m) => [
       m.date,
@@ -152,6 +154,7 @@ function exportReport() {
       m.kind === "egreso" ? m.amountCents / 100 : 0,
       m.note,
       m.recordedBy,
+      m.evidencePath ? "Sí" : "No",
     ]),
     [],
     ["COMPROMISOS"],

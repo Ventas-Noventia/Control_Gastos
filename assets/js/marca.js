@@ -5,16 +5,16 @@ import {
   submitForm,
   pageError,
   assertAdmin,
-} from "./ui.js?v=20261002-noventia-v6";
+} from "./ui.js?v=20261002-control-v7";
 import {
   adminAction,
   validateImage,
-} from "./admin-api.js?v=20261002-noventia-v6";
+} from "./admin-api.js?v=20261002-control-v7";
 import {
   loadBrand,
   DEFAULT_LOGO,
   renderLogo,
-} from "./branding.js?v=20261002-noventia-v6";
+} from "./branding.js?v=20261002-control-v7";
 
 const form = $("#brand-form");
 let ctx,

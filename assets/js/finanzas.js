@@ -97,11 +97,13 @@ export function obligations(state, from, to) {
         ? "Completado"
         : r === 0 && base.amountCents > 0
           ? "Pagado"
-          : p > 0
-            ? "Pago parcial"
-            : base.dueDate < today()
-              ? "Vencido"
-              : "Pendiente",
+          : base.dueDate < today()
+            ? "Vencido"
+            : p > 0
+              ? "Pago parcial"
+              : base.sourceType === "fijo"
+                ? "A tiempo"
+                : "Pendiente",
     });
   };
   for (const t of state.tasks)

@@ -1,6 +1,6 @@
-import { getClient } from "./supabase-client.js?v=20261002-noventia-v6";
-import { currentProfile } from "./auth.js?v=20261002-noventia-v6";
-import { loadAvatars } from "./avatars.js?v=20261002-noventia-v6";
+import { getClient } from "./supabase-client.js?v=20261002-control-v7";
+import { currentProfile } from "./auth.js?v=20261002-control-v7";
+import { loadAvatars } from "./avatars.js?v=20261002-control-v7";
 /** Supabase limita normalmente cada respuesta a 1000 filas: carga todas por páginas. */
 async function readAll(table, options = {}) {
   const rows = [];
@@ -47,6 +47,13 @@ export async function loadState() {
       linksJson: JSON.stringify(t.links),
       createdAt: t.created_at,
       updatedAt: t.updated_at,
+      createdBy: t.created_by,
+      createdByName: t.created_by_name,
+      updatedBy: t.updated_by,
+      updatedByName: t.updated_by_name,
+      completedBy: t.completed_by,
+      completedByName: t.completed_by_name,
+      completedAt: t.completed_at,
       deletedAt: t.deleted_at,
     })),
     expenses: expenses.map((e) => ({
@@ -57,6 +64,7 @@ export async function loadState() {
       startDate: e.start_date,
       updatedAt: e.updated_at,
       deletedAt: e.deleted_at,
+      evidencePath: e.evidence_path,
     })),
     schedules: schedules.map((s) => ({
       id: s.id,
@@ -85,8 +93,33 @@ export async function loadState() {
         names.get(m.recorded_by) ?? m.recorded_by ?? "Cuenta eliminada",
       deletedAt: m.deleted_at,
       singletonKey: m.singleton_key,
+      evidencePath: m.evidence_path,
+      createdAt: m.created_at,
     })),
   };
+}
+export async function taskAuditAvailable() {
+  try {
+    const { error } = await getClient()
+      .from("control_task_activity")
+      .select("id")
+      .range(0, 0);
+    return !error;
+  } catch {
+    return false;
+  }
+}
+export async function loadTaskActivity(taskId, beforeId = null) {
+  const size = 25;
+  let query = getClient()
+    .from("control_task_activity")
+    .select("id,action,actor_name,occurred_at,details")
+    .eq("task_id", taskId)
+    .order("id", { ascending: false });
+  if (beforeId !== null) query = query.lt("id", beforeId);
+  const { data, error } = await query.range(0, size);
+  if (error) throw new Error("No se pudo cargar la actividad del pendiente.");
+  return { entries: data.slice(0, size), hasMore: data.length > size };
 }
 async function rpc(name, args) {
   const { data, error } = await getClient().rpc(name, args);
