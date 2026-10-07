@@ -5,6 +5,8 @@ import {
   icon,
   badge,
   setStats,
+  taskDetails,
+  renderAttention,
   modal,
   clearFormError,
   submitForm,
@@ -21,7 +23,7 @@ import {
   setCategory,
   readCategory,
   availableCategories,
-} from "./ui.js?v=20261005-periodos-v8";
+} from "./ui.js?v=20261006-alertas-v9";
 import {
   saveTask,
   taskAuditAvailable,
@@ -31,7 +33,7 @@ import {
   responsibleDetail,
   responsibleExport,
   showTaskActivity,
-} from "./task-activity.js?v=20261005-periodos-v8";
+} from "./task-activity.js?v=20261006-alertas-v9";
 import {
   money,
   today,
@@ -61,12 +63,31 @@ function render() {
   setStats([
     {
       label: "Pendientes activos",
+      details: () =>
+        taskDetails(
+          ctx.state.tasks.filter((t) => !t.deletedAt && !completed(t)),
+          byId,
+          "Todos los pendientes abiertos, independientemente del filtro de la tabla.",
+          ctx.admin,
+        ),
       value: active.length,
       detail: "Por atender o completar",
       icon: "clipboard-check",
     },
     {
       label: "Por cubrir",
+      details: () =>
+        taskDetails(
+          ctx.state.tasks.filter(
+            (t) =>
+              !t.deletedAt &&
+              !completed(t) &&
+              byId.get(t.id)?.remainingCents > 0,
+          ),
+          byId,
+          "Pendientes activos con importe que aún falta pagar.",
+          ctx.admin,
+        ),
       value: money(
         active.reduce((s, t) => s + byId.get(t.id).remainingCents, 0),
       ),
@@ -76,17 +97,33 @@ function render() {
     },
     {
       label: "Fuera de fecha",
+      details: () =>
+        taskDetails(
+          ctx.state.tasks.filter(
+            (t) => !t.deletedAt && !completed(t) && t.dueDate < today(),
+          ),
+          byId,
+          "Pendientes abiertos cuya fecha límite ya pasó.",
+          ctx.admin,
+        ),
       value: active.filter((t) => t.dueDate < today()).length,
       detail: "Requieren seguimiento",
       icon: "clock",
     },
     {
       label: "Completados",
+      details: () =>
+        taskDetails(
+          ctx.state.tasks.filter((t) => !t.deletedAt && completed(t)),
+          byId,
+          "Pendientes pagados o finalizados.",
+        ),
       value: tasks.filter(completed).length,
       detail: "Pagados o finalizados",
       icon: "check2-all",
     },
   ]);
+  renderAttention(ctx, "pendiente");
   const previous = $("#category").value,
     categories = availableCategories(ctx.state);
   $("#category").innerHTML =
@@ -188,6 +225,16 @@ try {
   const openPayment = payments(ctx, render);
   render();
   setupDeletion(ctx, render);
+  document.addEventListener("control:open-task", (event) => {
+    const task = ctx.state.tasks.find(
+      (t) => t.id === event.detail.id && !t.deletedAt,
+    );
+    if (!task) return;
+    if (event.detail.prioritize && ctx.admin) {
+      edit(task);
+      form.elements.priority.value = "alta";
+    } else detail(task);
+  });
   document.addEventListener("control:updated", render);
   $("#task-modal").addEventListener("shown.bs.modal", () => {
     form.elements.title.focus();

@@ -5,6 +5,7 @@ import {
   icon,
   badge,
   setStats,
+  userDetails,
   modal,
   clearFormError,
   submitForm,
@@ -12,7 +13,7 @@ import {
   pageError,
   assertAdmin,
   emptyRow,
-} from "./ui.js?v=20261005-periodos-v8";
+} from "./ui.js?v=20261006-alertas-v9";
 import {
   adminAction,
   validateImage,
@@ -62,18 +63,33 @@ function render() {
   setStats([
     {
       label: "Usuarios registrados",
+      details: () =>
+        userDetails(
+          ctx.state.users,
+          "Todas las cuentas registradas, activas y desactivadas.",
+        ),
       value: users.length,
       detail: "Cuentas de acceso",
       icon: "people",
     },
     {
       label: "Administradores",
+      details: () =>
+        userDetails(
+          ctx.state.users.filter((u) => u.role === "admin" && u.active),
+          "Administradores activos con permiso para modificar registros.",
+        ),
       value: users.filter((u) => u.role === "admin" && u.active).length,
       detail: "Crean, editan y eliminan",
       icon: "shield-check",
     },
     {
       label: "Consulta",
+      details: () =>
+        userDetails(
+          ctx.state.users.filter((u) => u.role === "consulta" && u.active),
+          "Cuentas de consulta activas.",
+        ),
       value: users.filter((u) => u.role === "consulta" && u.active).length,
       detail: "Revisan y exportan",
       icon: "eye",

@@ -8,7 +8,7 @@ import {
   assertAdmin,
   setCategory,
   readCategory,
-} from "./ui.js?v=20261005-periodos-v8";
+} from "./ui.js?v=20261006-alertas-v9";
 import { saveMovement } from "./database.js?v=20261005-periodos-v8";
 import { today } from "./finanzas.js?v=20261005-periodos-v8";
 export function setupMovementForm(ctx, onReload, opening = false) {

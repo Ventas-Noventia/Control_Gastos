@@ -5,6 +5,9 @@ import {
   icon,
   badge,
   setStats,
+  obligationDetails,
+  movementDetails,
+  renderAttention,
   modal,
   clearFormError,
   submitForm,
@@ -19,7 +22,7 @@ import {
   assertAdmin,
   setCategory,
   readCategory,
-} from "./ui.js?v=20261005-periodos-v8";
+} from "./ui.js?v=20261006-alertas-v9";
 import { saveExpense } from "./database.js?v=20261005-periodos-v8";
 import {
   evidenceForm,
@@ -109,30 +112,95 @@ function render() {
   setStats([
     {
       label: "Gastos registrados",
+      details: () => ({
+        description:
+          "Catálogo de gastos no eliminados. El importe vigente es por pago, no un total mensual.",
+        columns: [
+          "Concepto",
+          "Categoría",
+          "Frecuencia",
+          "Día de pago",
+          "Importe por pago",
+          "Inicio",
+          "Programación",
+        ],
+        rows: ctx.state.expenses
+          .filter((e) => !e.deletedAt)
+          .map((e) => {
+            const s = currentSchedule(e);
+            return {
+              cells: [
+                e.title,
+                e.category,
+                s?.frequency || "Sin programación",
+                s ? scheduleLabel(s) : "—",
+                money(s?.amountCents || 0),
+                dateLabel(e.startDate),
+                s?.effectiveDate > today()
+                  ? "Programado"
+                  : s?.active
+                    ? "Activo"
+                    : "Pausado",
+              ],
+            };
+          }),
+      }),
       value: expenses.length,
       detail: "Servicios y compromisos recurrentes",
       icon: "arrow-repeat",
     },
     {
       label: "Programado en el periodo",
+      details: () =>
+        obligationDetails(
+          periodDues,
+          "Vencimientos incluidos en el periodo seleccionado.",
+        ),
       value: money(dues.reduce((s, o) => s + o.amountCents, 0)),
       detail: `${dateLabel(range.from)} — ${dateLabel(range.to)}`,
       icon: "calendar3",
     },
     {
       label: "Pagado de lo programado",
+      details: () => {
+        const cutoff = periodRange(
+          $("#period").value,
+          $("#anchor").value || today(),
+        ).to;
+        const keys = new Set(
+          periodDues.map((o) => `${o.sourceId}:${o.dueDate}`),
+        );
+        return movementDetails(
+          ctx.state.movements.filter(
+            (m) =>
+              !m.deletedAt &&
+              m.kind === "egreso" &&
+              m.sourceType === "fijo" &&
+              keys.has(`${m.sourceId}:${m.dueDate}`) &&
+              m.date <= cutoff,
+          ),
+          "Pagos ligados a los vencimientos seleccionados y realizados hasta el corte. Incluye pagos anteriores al inicio de la consulta.",
+        );
+      },
       value: money(dues.reduce((s, o) => s + o.paidCents, 0)),
       detail: "Pagos ligados a estos vencimientos",
       icon: "check2-all",
     },
     {
       label: "Por cubrir en el periodo",
+      details: () =>
+        obligationDetails(
+          periodDues.filter((o) => o.remainingCents > 0),
+          "Vencimientos con saldo por pagar al corte seleccionado.",
+          "remainingCents",
+        ),
       value: money(dues.reduce((s, o) => s + o.remainingCents, 0)),
       detail: "Compromisos que siguen abiertos",
       icon: "wallet2",
       accent: true,
     },
   ]);
+  renderAttention(ctx, "fijo");
   const q = $("#search").value.trim().toLowerCase(),
     frequency = $("#frequency").value,
     statusFilter = $("#expense-status").value;
@@ -235,7 +303,11 @@ function edit(expense) {
 }
 try {
   ctx = await initPage("gastos-fijos", "Gastos fijos");
-  $("#anchor").value = today();
+  const alertDate = new URLSearchParams(location.search).get("vence");
+  $("#anchor").value =
+    /^\d{4}-\d{2}-\d{2}$/.test(alertDate || "") && !isNaN(Date.parse(alertDate))
+      ? alertDate
+      : today();
   const tooltips = [
     ...document.querySelectorAll('[data-bs-toggle="tooltip"]'),
   ].map(

@@ -166,3 +166,7 @@ El SQL también se ejecutó en PostgreSQL mediante PGlite, simulando las identid
 Si el formulario de Usuarios o Marca no puede guardar, sigue la tabla de ayuda de `ACTUALIZACION_USUARIOS_Y_MARCA.md`.
 
 Documentación oficial: [Supabase JS](https://supabase.com/docs/reference/javascript/installing), [inicio de sesión con contraseña](https://supabase.com/docs/reference/javascript/auth-signinwithpassword), [permisos RLS](https://supabase.com/docs/guides/database/postgres/row-level-security), [Bootstrap](https://getbootstrap.com/docs/5.3/getting-started/introduction/).
+
+## Avisos e indicadores
+
+Los dashboards incluyen avisos de vencimiento y tarjetas con detalle. Consulta [ACTUALIZACION_ALERTAS_E_INDICADORES.md](ACTUALIZACION_ALERTAS_E_INDICADORES.md) para su comportamiento e instalación.

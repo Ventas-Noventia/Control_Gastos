@@ -5,7 +5,7 @@ import {
   submitForm,
   pageError,
   assertAdmin,
-} from "./ui.js?v=20261005-periodos-v8";
+} from "./ui.js?v=20261006-alertas-v9";
 import {
   adminAction,
   validateImage,

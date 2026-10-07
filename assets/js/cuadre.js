@@ -5,14 +5,18 @@ import {
   icon,
   badge,
   setStats,
+  movementDetails,
+  obligationDetails,
+  showDashboardDetails,
+  renderAttention,
   exportCSV,
   emptyRow,
   setupDeletion,
   payments,
   rowActions,
   pageError,
-} from "./ui.js?v=20261005-periodos-v8";
-import { setupMovementForm } from "./movimiento-form.js?v=20261005-periodos-v8";
+} from "./ui.js?v=20261006-alertas-v9";
+import { setupMovementForm } from "./movimiento-form.js?v=20261006-alertas-v9";
 import { evidenceButton } from "./evidence.js?v=20261002-control-v7";
 import {
   money,
@@ -27,6 +31,7 @@ let ctx,
   range,
   view = "movimientos";
 function render() {
+  renderAttention(ctx, "todos");
   const period = $("#period").value;
   $("#custom-dates").hidden = period !== "personalizado";
   $("#anchor").hidden = period === "personalizado";
@@ -53,24 +58,51 @@ function render() {
   setStats([
     {
       label: "Saldo al inicio",
+      details: () =>
+        movementDetails(
+          ctx.state.movements.filter(
+            (m) =>
+              !m.deletedAt &&
+              (m.date < range.from ||
+                (m.kind === "saldo_inicial" && m.date <= range.to)),
+          ),
+          "Movimientos anteriores al periodo y apertura registrada dentro de él. Los pagos restan al saldo.",
+          true,
+        ),
       value: money(report.opening + report.adjustments),
       detail: "Saldo anterior + apertura del periodo",
       icon: "wallet2",
     },
     {
       label: "Ingresos recibidos",
+      details: () =>
+        movementDetails(
+          report.movements.filter((m) => m.kind === "ingreso"),
+          "Ingresos del periodo consultado.",
+        ),
       value: money(report.incomes),
       detail: "Entradas registradas en el periodo",
       icon: "arrow-down-left",
     },
     {
       label: "Pagos realizados",
+      details: () =>
+        movementDetails(
+          report.movements.filter((m) => m.kind === "egreso"),
+          "Pagos realizados dentro del periodo, aunque su vencimiento corresponda a otro periodo.",
+        ),
       value: money(report.payments),
       detail: "Salidas registradas en el periodo",
       icon: "arrow-up-right",
     },
     {
       label: "Saldo final de caja",
+      details: () =>
+        movementDetails(
+          ctx.state.movements.filter((m) => !m.deletedAt && m.date <= range.to),
+          "Todos los movimientos hasta el corte. Saldo inicial + ingresos − pagos; los pagos aparecen con signo negativo.",
+          true,
+        ),
       value: money(report.closing),
       detail: "Saldo inicial + ingresos − pagos",
       icon: "calculator",
@@ -81,7 +113,7 @@ function render() {
     (m) => m.kind === "saldo_inicial",
   );
   $("#projection").innerHTML =
-    `<section class="projection-summary"><span class="eyebrow">COMPROMISOS DEL PERIODO</span><div><span>Programado</span><strong>${money(report.planned)}</strong></div><div><span>Por cubrir</span><strong>${money(report.remaining)}</strong></div><small>Incluye pendientes y vencimientos de gastos fijos con fecha en esta consulta.</small></section><section class="projected-card ${report.projected < 0 ? "negative" : ""}"><span>Saldo después de cubrir lo pendiente</span><strong>${money(report.projected)}</strong><p>${report.projected < 0 ? "Hace falta dinero para cubrir todos los compromisos del periodo." : "Saldo de caja menos los compromisos que siguen pendientes."}</p></section>`;
+    `<section class="projection-summary"><span class="eyebrow">COMPROMISOS DEL PERIODO</span><div><button type="button" class="projection-detail-button" data-report-detail="planned" aria-haspopup="dialog">Programado <strong>${money(report.planned)}</strong><small>Ver detalle →</small></button></div><div><button type="button" class="projection-detail-button" data-report-detail="remaining" aria-haspopup="dialog">Por cubrir <strong>${money(report.remaining)}</strong><small>Ver detalle →</small></button></div><small>Incluye pendientes y vencimientos de gastos fijos con fecha en esta consulta.</small></section><section class="projected-card ${report.projected < 0 ? "negative" : ""}"><span>Saldo después de cubrir lo pendiente</span><strong>${money(report.projected)}</strong><button type="button" class="btn btn-outline-secondary btn-sm" data-report-detail="projected" aria-haspopup="dialog">Ver cálculo</button><p>${report.projected < 0 ? "Hace falta dinero para cubrir todos los compromisos del periodo." : "Saldo de caja menos los compromisos que siguen pendientes."}</p></section>`;
   $("#movement-rows").innerHTML = report.movements.length
     ? report.movements
         .map(
@@ -191,6 +223,52 @@ try {
     editPayment = payments(ctx, render);
   render();
   setupDeletion(ctx, render);
+  $("#projection").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-report-detail]");
+    if (!button || !report) return;
+    const kind = button.dataset.reportDetail;
+    if (kind === "planned")
+      showDashboardDetails(
+        "Compromisos programados",
+        () =>
+          obligationDetails(
+            report.obligations,
+            "Compromisos con vencimiento dentro de la consulta.",
+          ),
+        button,
+      );
+    else if (kind === "remaining")
+      showDashboardDetails(
+        "Compromisos por cubrir",
+        () =>
+          obligationDetails(
+            report.obligations.filter((o) => o.remainingCents > 0),
+            "Saldos que faltan por pagar al corte.",
+            "remainingCents",
+          ),
+        button,
+      );
+    else
+      showDashboardDetails(
+        "Saldo después de cubrir lo pendiente",
+        () => ({
+          ...obligationDetails(
+            report.obligations.filter((o) => o.remainingCents > 0),
+            "Saldo final de caja menos compromisos por cubrir. Es una proyección; no registra pagos.",
+            "remainingCents",
+          ),
+          summary: [
+            { label: "Saldo final de caja", value: money(report.closing) },
+            {
+              label: "Menos compromisos por cubrir",
+              value: money(report.remaining),
+            },
+            { label: "Saldo proyectado", value: money(report.projected) },
+          ],
+        }),
+        button,
+      );
+  });
   document.addEventListener("control:updated", render);
   ["period", "anchor", "from", "to"].forEach((id) =>
     $("#" + id).addEventListener("change", render),

@@ -4,13 +4,14 @@ import {
   esc,
   icon,
   setStats,
+  movementDetails,
   exportCSV,
   emptyRow,
   setupDeletion,
   rowActions,
   pageError,
-} from "./ui.js?v=20261005-periodos-v8";
-import { setupMovementForm } from "./movimiento-form.js?v=20261005-periodos-v8";
+} from "./ui.js?v=20261006-alertas-v9";
+import { setupMovementForm } from "./movimiento-form.js?v=20261006-alertas-v9";
 import {
   money,
   today,
@@ -21,7 +22,9 @@ let ctx,
   filtered = [];
 const month = periodRange("mes", today());
 function render() {
-  const incomes = ctx.state.movements.filter((m) => m.kind === "ingreso"),
+  const incomes = ctx.state.movements.filter(
+      (m) => m.kind === "ingreso" && !m.deletedAt,
+    ),
     q = $("#search").value.trim().toLowerCase(),
     from = $("#from").value,
     to = $("#to").value;
@@ -39,6 +42,17 @@ function render() {
   setStats([
     {
       label: "Ingresos del mes",
+      details: () =>
+        movementDetails(
+          ctx.state.movements.filter(
+            (m) =>
+              !m.deletedAt &&
+              m.kind === "ingreso" &&
+              m.date >= month.from &&
+              m.date <= month.to,
+          ),
+          "Ingresos del mes actual; no dependen del filtro de la tabla.",
+        ),
       value: money(current.reduce((s, m) => s + m.amountCents, 0)),
       detail: `${dateLabel(month.from)} — ${dateLabel(month.to)}`,
       icon: "wallet2",
@@ -46,12 +60,28 @@ function render() {
     },
     {
       label: "Entradas del mes",
+      details: () =>
+        movementDetails(
+          ctx.state.movements.filter(
+            (m) =>
+              !m.deletedAt &&
+              m.kind === "ingreso" &&
+              m.date >= month.from &&
+              m.date <= month.to,
+          ),
+          "Movimientos que forman el número de entradas del mes actual.",
+        ),
       value: current.length,
       detail: "Movimientos registrados",
       icon: "receipt",
     },
     {
       label: "Total de la consulta",
+      details: () =>
+        movementDetails(
+          filtered,
+          "Ingresos del rango y búsqueda seleccionados en la tabla.",
+        ),
       value: money(filtered.reduce((s, m) => s + m.amountCents, 0)),
       detail: `${filtered.length} ingresos en el rango seleccionado`,
       icon: "arrow-down-left",

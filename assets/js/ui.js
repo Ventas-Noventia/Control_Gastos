@@ -1,3 +1,12 @@
+import { showDashboardDetails } from "./dashboard-details.js?v=20261006-alertas-v9";
+export {
+  showDashboardDetails,
+  renderAttention,
+  taskDetails,
+  obligationDetails,
+  movementDetails,
+  userDetails,
+} from "./dashboard-details.js?v=20261006-alertas-v9";
 import { requireProfile, signOut } from "./auth.js?v=20261002-control-v7";
 import { loadState } from "./database.js?v=20261005-periodos-v8";
 import { loadBrand } from "./branding.js?v=20261002-control-v7";
@@ -60,12 +69,19 @@ export function emptyRow(columns, title, description, action = "") {
   return `<tr><td colspan="${columns}"><div class="empty-state">${icon("clipboard-check")}<strong>${esc(title)}</strong><p>${esc(description)}</p>${action}</div></td></tr>`;
 }
 export function setStats(items) {
-  $("#stats").innerHTML = items
-    .map(
-      (s) =>
-        `<article class="stat ${s.accent ? "accent-stat" : ""}"><div class="stat-label">${esc(s.label)}${icon(s.icon)}</div><strong>${esc(s.value)}</strong><small>${esc(s.detail)}</small></article>`,
-    )
+  const stats = $("#stats");
+  stats.innerHTML = items
+    .map((s, i) => {
+      const tag = s.details ? "button" : "article";
+      return `<${tag} ${s.details ? `type="button" data-stat-detail="${i}" aria-haspopup="dialog" aria-controls="dashboard-detail-modal" aria-label="Ver detalle de ${esc(s.label)}"` : ""} class="stat ${s.accent ? "accent-stat" : ""} ${s.details ? "interactive-stat" : ""}"><span class="stat-label">${esc(s.label)}${icon(s.icon)}</span><strong>${esc(s.value)}</strong><small>${esc(s.detail)}</small>${s.details ? '<span class="stat-detail-hint">Ver detalle →</span>' : ""}</${tag}>`;
+    })
     .join("");
+  stats.querySelectorAll("[data-stat-detail]").forEach((button) =>
+    button.addEventListener("click", () => {
+      const s = items[Number(button.dataset.statDetail)];
+      showDashboardDetails(s.label, s.details, button);
+    }),
+  );
 }
 export function modal(id) {
   const node = document.getElementById(id);
